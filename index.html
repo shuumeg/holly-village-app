@@ -3,46 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>地域包括支援センター検索</title>
+<title>Holly Village</title>
 <link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
-<meta name="theme-color" content="#1f3a52">
+<link rel="icon" href="assets/icon-512.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/icon-512.png">
+<meta name="theme-color" content="#f7f1e2">
 </head>
-<body>
+<body class="cover-page">
 
-  <header class="app-header">
-    <h1>地域包括支援センター検索</h1>
-    <p class="subtitle">郵便番号または住所から、担当の地域包括支援センターを調べられます</p>
-  </header>
+  <main class="cover">
+    <img class="cover__logo" src="assets/logo-transparent.png" alt="Holly Village">
+    <p class="cover__tagline">医療・介護の現場を支える、小さな道具箱</p>
 
-  <main class="app-main">
-    <section class="search-section">
-      <form id="search-form" class="search-form">
-        <input
-          type="text"
-          id="search-input"
-          class="search-input"
-          placeholder="例：194-0021 または 町田市中町"
-          autocomplete="off"
-          inputmode="search"
-        >
-        <button type="submit" class="search-button">検索</button>
-      </form>
-      <p class="search-hint">郵便番号（ハイフンあり／なし）、または「市区町村＋町名」で検索できます</p>
-    </section>
-
-    <section id="results" class="results" aria-live="polite">
-      <p class="results-placeholder">郵便番号または住所を入力して検索してください。</p>
-    </section>
+    <nav class="cover__apps">
+      <a class="cover__app-card" href="search.html">
+        <span class="cover__app-icon" aria-hidden="true">🔍</span>
+        <span class="cover__app-body">
+          <span class="cover__app-name">地域包括支援センター検索</span>
+          <span class="cover__app-desc">郵便番号・住所から、担当の地域包括支援センターを調べられます</span>
+        </span>
+        <span class="cover__app-arrow" aria-hidden="true">›</span>
+      </a>
+    </nav>
   </main>
 
-  <footer class="app-footer">
-    <p>※各センターの情報は自治体公式ページをもとに作成していますが、統廃合・移転等により変更されている場合があります。最新情報は各センターまたは自治体にご確認ください。</p>
+  <footer class="cover__footer">
+    <p>© Holly Village</p>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="script.js"></script>
 </body>
 </html>

@@ -1,15 +1,16 @@
 {
-  "name": "地域包括支援センター検索",
-  "short_name": "包括検索",
-  "description": "郵便番号や住所から、担当の地域包括支援センターを検索できます",
+  "name": "Holly Village",
+  "short_name": "Holly Village",
+  "description": "医療・介護の現場を支える、Holly Villageのアプリ集",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f2f4f7",
-  "theme_color": "#1f3a52",
+  "background_color": "#f7f1e2",
+  "theme_color": "#f7f1e2",
   "lang": "ja",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

@@ -35,13 +35,123 @@ body {
   line-height: 1.6;
 }
 
+/* ---------- 表紙ページ（Holly Village ポータル） ---------- */
+
+body.cover-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, #f7f1e2 0%, #ede0c4 100%);
+}
+
+.cover {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 48px 20px;
+  text-align: center;
+}
+
+.cover__logo {
+  width: 220px;
+  max-width: 70vw;
+}
+
+.cover__tagline {
+  margin: 0;
+  color: #3d5c40;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+}
+
+.cover__apps {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cover__app-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background-color: #e2d2b0;
+  border-left: 4px solid #3d5c40;
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  text-decoration: none;
+  color: var(--color-text);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+.cover__app-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+  border-left-color: #b08d3f;
+}
+
+.cover__app-icon {
+  flex: 0 0 auto;
+  font-size: 1.5rem;
+}
+
+.cover__app-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.cover__app-name {
+  font-weight: 700;
+  color: #3d5c40;
+}
+
+.cover__app-desc {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.cover__app-arrow {
+  flex: 0 0 auto;
+  font-size: 1.3rem;
+  color: #b08d3f;
+}
+
+.cover__footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 0.75rem;
+  color: #7a6f56;
+}
+
 /* ---------- ヘッダー ---------- */
 
 .app-header {
+  position: relative;
   background: linear-gradient(160deg, #366089 0%, #1f3a52 100%);
   color: #ffffff;
   padding: 32px 20px 36px;
   text-align: center;
+}
+
+.app-header__back {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  color: #d8e2ec;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.app-header__back:hover {
+  text-decoration: underline;
 }
 
 .app-header h1 {
