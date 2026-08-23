@@ -1,7 +1,7 @@
 {
-  "name": "Social Work Navi",
-  "short_name": "Social Work Navi",
-  "description": "医療・介護の現場を支える、Holly VillageのSocial Work Navi",
+  "name": "Social Work Navi.",
+  "short_name": "Social Work Navi.",
+  "description": "医療・介護の現場を支える、Holly VillageのSocial Work Navi.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
