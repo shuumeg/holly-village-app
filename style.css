@@ -86,6 +86,42 @@ body.cover-page {
   letter-spacing: 0.02em;
 }
 
+.cover__groups {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.cover__group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cover__group-heading {
+  margin: 0 0 2px 4px;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.02em;
+}
+
+.cover__app-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: #fef3c7;
+  color: #b45309;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+
 .cover__apps {
   width: 100%;
   max-width: 460px;
