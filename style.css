@@ -5,14 +5,14 @@
    ========================================================== */
 
 :root {
-  --color-primary: #3d658c;
-  --color-primary-dark: #26445d;
-  --color-primary-light: #e9eff5;
-  --color-accent: #6b91b8;
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1e3a8a;
+  --color-primary-light: #eaf1fd;
+  --color-accent: #60a5fa;
   --color-bg: #f2f4f7;
   --color-surface: #ffffff;
-  --color-text: #212a35;
-  --color-text-muted: #66717d;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
   --color-border: #dde2e8;
   --color-danger: #a4453a;
 
@@ -28,11 +28,13 @@
 
 body {
   margin: 0;
-  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic",
-    "Meiryo", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", "Meiryo", -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--color-bg);
   color: var(--color-text);
-  line-height: 1.6;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* ---------- 表紙ページ（Holly Village ポータル） ---------- */
@@ -41,7 +43,7 @@ body.cover-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(160deg, #f7f1e2 0%, #ede0c4 100%);
+  background-color: #f9fafb;
 }
 
 .cover {
@@ -50,26 +52,43 @@ body.cover-page {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  gap: 32px;
   padding: 48px 20px;
   text-align: center;
 }
 
 .cover__logo {
-  width: 220px;
-  max-width: 70vw;
+  width: 200px;
+  max-width: 60vw;
+}
+
+.cover__logo-text {
+  margin: 0;
+  font-size: 2.4rem;
+  letter-spacing: 0.01em;
+}
+
+.cover__logo-text .app-logo__bold {
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.cover__logo-text .app-logo__light {
+  font-weight: 400;
+  color: #3b82f6;
+  margin-left: 0.25em;
 }
 
 .cover__tagline {
   margin: 0;
-  color: #3d5c40;
-  font-size: 0.95rem;
-  letter-spacing: 0.03em;
+  color: #6b7280;
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
 }
 
 .cover__apps {
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -79,29 +98,42 @@ body.cover-page {
   display: flex;
   align-items: center;
   gap: 14px;
-  background-color: #e2d2b0;
-  border-left: 4px solid #3d5c40;
-  border-radius: var(--radius-lg);
+  background-color: #ffffff;
+  border-left: 4px solid #1e3a8a;
+  border-radius: 16px;
   padding: 18px 20px;
   text-decoration: none;
   color: var(--color-text);
-  box-shadow: var(--shadow-card);
-  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 4px 6px -1px rgba(17, 24, 39, 0.08), 0 2px 4px -2px rgba(17, 24, 39, 0.06);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-.cover__app-card:hover {
-  box-shadow: var(--shadow-card-hover);
-  transform: translateY(-1px);
-  border-left-color: #b08d3f;
+.cover__app-card:hover,
+.cover__app-card:focus-visible {
+  box-shadow: 0 12px 20px -4px rgba(17, 24, 39, 0.14), 0 6px 8px -4px rgba(17, 24, 39, 0.1);
+  transform: translateY(-2px);
 }
 
 .cover__app-icon {
   flex: 0 0 auto;
-  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.cover__app-icon svg {
+  width: 22px;
+  height: 22px;
 }
 
 .cover__app-body {
   flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -109,35 +141,50 @@ body.cover-page {
 }
 
 .cover__app-name {
+  font-size: 1rem;
   font-weight: 700;
-  color: #3d5c40;
+  letter-spacing: 0.01em;
+  color: #1e293b;
 }
 
 .cover__app-desc {
   font-size: 0.82rem;
-  color: var(--color-text-muted);
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: #6b7280;
 }
 
 .cover__app-arrow {
   flex: 0 0 auto;
-  font-size: 1.3rem;
-  color: #b08d3f;
+  display: flex;
+  color: #9ca3af;
+}
+
+.cover__app-arrow svg {
+  width: 18px;
+  height: 18px;
 }
 
 .cover__footer {
   text-align: center;
   padding: 16px;
   font-size: 0.75rem;
-  color: #7a6f56;
+  color: #9ca3af;
+}
+
+.cover__brand-credit {
+  margin: 0 0 2px;
+  font-size: 0.72rem;
+  color: #b0b7c1;
 }
 
 /* ---------- ヘッダー ---------- */
 
 .app-header {
   position: relative;
-  background: linear-gradient(160deg, #366089 0%, #1f3a52 100%);
-  color: #ffffff;
-  padding: 32px 20px 36px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  padding: 28px 20px 30px;
   text-align: center;
 }
 
@@ -145,7 +192,7 @@ body.cover-page {
   position: absolute;
   top: 16px;
   left: 16px;
-  color: #d8e2ec;
+  color: var(--color-text-muted);
   font-size: 0.8rem;
   text-decoration: none;
 }
@@ -154,17 +201,39 @@ body.cover-page {
   text-decoration: underline;
 }
 
-.app-header h1 {
-  margin: 0 0 8px;
-  font-size: 1.5rem;
+.app-logo {
+  margin: 0 0 10px;
+  font-size: 1.6rem;
+  letter-spacing: 0.01em;
+}
+
+.app-logo__bold {
   font-weight: 700;
+  color: #1e3a8a;
+}
+
+.app-logo__light {
+  font-weight: 400;
+  color: #3b82f6;
+  margin-left: 0.3em;
+}
+
+.app-feature-tag {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 600;
   letter-spacing: 0.02em;
 }
 
 .app-header .subtitle {
   margin: 0;
   font-size: 0.9rem;
-  color: #aebdcd;
+  color: var(--color-text-muted);
 }
 
 /* ---------- メイン ---------- */
@@ -206,7 +275,7 @@ body.cover-page {
 
 .search-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(53, 89, 126, 0.15);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
 }
 
 .search-button {
@@ -214,6 +283,7 @@ body.cover-page {
   padding: 12px 22px;
   font-size: 1rem;
   font-weight: 700;
+  letter-spacing: 0.02em;
   color: #ffffff;
   background-color: var(--color-primary);
   border: none;
@@ -290,6 +360,7 @@ body.cover-page {
   margin: 0 0 10px;
   font-size: 1.08rem;
   font-weight: 700;
+  letter-spacing: 0.01em;
   color: var(--color-primary-dark);
 }
 
@@ -344,6 +415,12 @@ body.cover-page {
   padding: 16px;
   font-size: 0.75rem;
   color: var(--color-text-muted);
+}
+
+.app-footer__copyright {
+  margin: 10px 0 0;
+  font-size: 0.7rem;
+  color: #9ca3af;
 }
 
 /* ---------- レスポンシブ（スマホ対応） ---------- */

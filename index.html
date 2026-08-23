@@ -3,33 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Holly Village</title>
+<title>Social Work Navi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="assets/icon-512.png" type="image/png">
-<link rel="apple-touch-icon" href="assets/icon-512.png">
-<meta name="theme-color" content="#f7f1e2">
+<link rel="icon" href="assets/swnavi-icon-512.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/swnavi-icon-512.png">
+<meta name="theme-color" content="#f9fafb">
 </head>
 <body class="cover-page">
 
   <main class="cover">
-    <img class="cover__logo" src="assets/logo-transparent.png" alt="Holly Village">
+    <h1 class="cover__logo-text"><span class="app-logo__bold">Social Work</span><span class="app-logo__light">Navi</span></h1>
     <p class="cover__tagline">医療・介護の現場を支える、小さな道具箱</p>
 
     <nav class="cover__apps">
       <a class="cover__app-card" href="search.html">
-        <span class="cover__app-icon" aria-hidden="true">🔍</span>
+        <span class="cover__app-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
         <span class="cover__app-body">
           <span class="cover__app-name">地域包括支援センター検索</span>
           <span class="cover__app-desc">郵便番号・住所から、担当の地域包括支援センターを調べられます</span>
         </span>
-        <span class="cover__app-arrow" aria-hidden="true">›</span>
+        <span class="cover__app-arrow" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </span>
       </a>
     </nav>
   </main>
 
   <footer class="cover__footer">
-    <p>© Holly Village</p>
+    <p class="cover__brand-credit">by Holly Village</p>
+    <p>© 2026 Social Work Navi. All Rights Reserved.</p>
   </footer>
 
 </body>
