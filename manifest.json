@@ -1,0 +1,15 @@
+{
+  "name": "地域包括支援センター検索",
+  "short_name": "包括検索",
+  "description": "郵便番号や住所から、担当の地域包括支援センターを検索できます",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f4f7",
+  "theme_color": "#1f3a52",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
