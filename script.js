@@ -130,6 +130,13 @@ function formatZip(postalCode) {
   return `〒${postalCode.slice(0, 3)}-${postalCode.slice(3)}`;
 }
 
+// "2026-08-23" のような日付文字列を「2026年8月23日」表記に変換
+function formatConfirmedDate(dateStr) {
+  const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return dateStr;
+  return `${m[1]}年${Number(m[2])}月${Number(m[3])}日`;
+}
+
 function renderResults(results, query) {
   resultsEl.innerHTML = "";
 
@@ -176,6 +183,10 @@ function createCenterCard(center) {
     </p>`
     : "";
 
+  const confirmedRow = center.confirmed_on
+    ? `<p class="center-card__confirmed">${escapeHtml(formatConfirmedDate(center.confirmed_on))}時点の情報</p>`
+    : "";
+
   card.innerHTML = `
     ${zipBadge}
     <h2 class="center-card__name">${escapeHtml(center.name)}</h2>
@@ -188,6 +199,7 @@ function createCenterCard(center) {
       <a href="tel:${center.phone.replace(/-/g, "")}">${escapeHtml(center.phone)}</a>
     </p>
     ${areaRow}
+    ${confirmedRow}
   `;
 
   return card;
