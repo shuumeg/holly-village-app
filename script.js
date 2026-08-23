@@ -143,8 +143,11 @@ function renderResults(results, query) {
   if (!query) {
     resultsEl.innerHTML =
       '<p class="results-placeholder">郵便番号または住所を入力して検索してください。</p>';
+    document.body.classList.remove("has-results");
     return;
   }
+
+  document.body.classList.add("has-results");
 
   if (results.length === 0) {
     resultsEl.innerHTML =
@@ -163,6 +166,7 @@ function renderResults(results, query) {
 }
 
 function renderError() {
+  document.body.classList.add("has-results");
   resultsEl.innerHTML =
     '<p class="results-empty">データの取得に失敗しました。しばらくしてから再度お試しください。</p>';
 }

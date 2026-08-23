@@ -214,13 +214,22 @@ body.cover-page {
   color: #b0b7c1;
 }
 
+/* ---------- 検索ページ全体レイアウト ---------- */
+
+body.search-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 /* ---------- ヘッダー ---------- */
 
 .app-header {
   position: relative;
+  flex: 0 0 auto;
   background-color: #ffffff;
   border-bottom: 1px solid var(--color-border);
-  padding: 28px 20px 30px;
+  padding: clamp(28px, 9vh, 96px) 20px 32px;
   text-align: center;
 }
 
@@ -275,9 +284,18 @@ body.cover-page {
 /* ---------- メイン ---------- */
 
 .app-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
   max-width: 640px;
   margin: 0 auto;
   padding: 24px 16px 40px;
+}
+
+body.has-results .app-main {
+  justify-content: flex-start;
 }
 
 /* ---------- 検索エリア ---------- */
@@ -447,6 +465,7 @@ body.cover-page {
 /* ---------- フッター ---------- */
 
 .app-footer {
+  flex: 0 0 auto;
   text-align: center;
   padding: 16px;
   font-size: 0.75rem;
