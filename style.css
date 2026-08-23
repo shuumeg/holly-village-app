@@ -1,0 +1,242 @@
+/* ==========================================================
+   地域包括支援センター検索アプリ - スタイルシート
+   白と青を基調にした、清潔感のある医療系デザイン
+   ========================================================== */
+
+:root {
+  --color-primary: #1565c0;
+  --color-primary-dark: #0d47a1;
+  --color-primary-light: #e3f2fd;
+  --color-accent: #42a5f5;
+  --color-bg: #f5f9fd;
+  --color-surface: #ffffff;
+  --color-text: #1c2733;
+  --color-text-muted: #5c6b7a;
+  --color-border: #d7e6f5;
+  --color-danger: #c0392b;
+
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-card: 0 2px 8px rgba(21, 101, 192, 0.08);
+  --shadow-card-hover: 0 6px 16px rgba(21, 101, 192, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic",
+    "Meiryo", -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* ---------- ヘッダー ---------- */
+
+.app-header {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: #ffffff;
+  padding: 28px 20px 32px;
+  text-align: center;
+}
+
+.app-header h1 {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.app-header .subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-primary-light);
+}
+
+/* ---------- メイン ---------- */
+
+.app-main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+/* ---------- 検索エリア ---------- */
+
+.search-section {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 24px;
+}
+
+.search-form {
+  display: flex;
+  gap: 10px;
+}
+
+.search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 12px 14px;
+  font-size: 1rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
+}
+
+.search-button {
+  flex: 0 0 auto;
+  padding: 12px 22px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.05s ease;
+}
+
+.search-button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.search-button:active {
+  transform: translateY(1px);
+}
+
+.search-hint {
+  margin: 12px 2px 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+/* ---------- 検索結果 ---------- */
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.results-placeholder,
+.results-empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 24px 12px;
+  font-size: 0.92rem;
+}
+
+.results-empty {
+  background-color: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.results-count {
+  margin: 0 2px 4px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* ---------- 結果カード ---------- */
+
+.center-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 5px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.center-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+.center-card__name {
+  margin: 0 0 10px;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.center-card__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 6px 0;
+  font-size: 0.92rem;
+  color: var(--color-text);
+}
+
+.center-card__icon {
+  flex: 0 0 auto;
+  width: 1.4em;
+  text-align: center;
+}
+
+.center-card__phone a {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.center-card__phone a:hover {
+  text-decoration: underline;
+}
+
+.center-card__zip {
+  display: inline-block;
+  margin-bottom: 2px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  background-color: var(--color-primary-light);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* ---------- フッター ---------- */
+
+.app-footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* ---------- レスポンシブ（スマホ対応） ---------- */
+
+@media (max-width: 480px) {
+  .app-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .search-form {
+    flex-direction: column;
+  }
+
+  .search-button {
+    width: 100%;
+  }
+
+  .center-card {
+    padding: 16px;
+  }
+}

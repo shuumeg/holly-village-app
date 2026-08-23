@@ -1,0 +1,159 @@
+/* ==========================================================
+   地域包括支援センター検索アプリ - スクリプト
+   Supabase の centers テーブルからデータを取得して検索する。
+   ========================================================== */
+
+// ---------- Supabase接続設定 ----------
+const SUPABASE_URL = "https://emxkorojlocgqzgezzri.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_6tqwbLFKrCjl6wos75xZgw_xZdu4C1k";
+
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+// ---------- DOM要素 ----------
+const searchForm = document.getElementById("search-form");
+const searchInput = document.getElementById("search-input");
+const searchButton = document.querySelector(".search-button");
+const resultsEl = document.getElementById("results");
+
+// ---------- ユーティリティ ----------
+
+// 郵便番号らしい文字列（数字とハイフンのみ、数字3桁以上）かどうか判定
+function isZipLikeQuery(query) {
+  return /^[0-9-]+$/.test(query) && query.replace(/[^0-9]/g, "").length >= 3;
+}
+
+// ハイフン等を除いた数字だけの文字列に変換
+function digitsOnly(str) {
+  return str.replace(/[^0-9]/g, "");
+}
+
+// 全角数字・スペースを半角に正規化（住所検索の揺れを吸収）
+function normalizeText(str) {
+  return str
+    .replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
+    .replace(/[\s　]+/g, "")
+    .trim();
+}
+
+// ---------- 検索ロジック ----------
+
+async function searchCenters(rawQuery) {
+  const query = normalizeText(rawQuery);
+  if (!query) return { data: [], error: null };
+
+  if (isZipLikeQuery(query)) {
+    const queryDigits = digitsOnly(query);
+    return supabaseClient
+      .from("centers")
+      .select("*")
+      .like("postal_code", `${queryDigits}%`)
+      .order("prefecture", { ascending: true });
+  }
+
+  const escaped = query.replace(/[%_,]/g, "\\$&");
+  return supabaseClient
+    .from("centers")
+    .select("*")
+    .or(
+      `address.ilike.%${escaped}%,area.ilike.%${escaped}%,city.ilike.%${escaped}%`
+    )
+    .order("prefecture", { ascending: true });
+}
+
+// ---------- 表示処理 ----------
+
+function formatZip(postalCode) {
+  if (!postalCode) return "";
+  return `〒${postalCode.slice(0, 3)}-${postalCode.slice(3)}`;
+}
+
+function renderResults(results, query) {
+  resultsEl.innerHTML = "";
+
+  if (!query) {
+    resultsEl.innerHTML =
+      '<p class="results-placeholder">郵便番号または住所を入力して検索してください。</p>';
+    return;
+  }
+
+  if (results.length === 0) {
+    resultsEl.innerHTML =
+      '<p class="results-empty">該当する地域包括支援センターが見つかりませんでした。<br>入力内容をご確認のうえ、再度検索してください。</p>';
+    return;
+  }
+
+  const countEl = document.createElement("p");
+  countEl.className = "results-count";
+  countEl.textContent = `${results.length}件見つかりました`;
+  resultsEl.appendChild(countEl);
+
+  results.forEach((center) => {
+    resultsEl.appendChild(createCenterCard(center));
+  });
+}
+
+function renderError() {
+  resultsEl.innerHTML =
+    '<p class="results-empty">データの取得に失敗しました。しばらくしてから再度お試しください。</p>';
+}
+
+function createCenterCard(center) {
+  const card = document.createElement("article");
+  card.className = "center-card";
+
+  const zipBadge = center.postal_code
+    ? `<span class="center-card__zip">${formatZip(center.postal_code)}</span>`
+    : "";
+
+  card.innerHTML = `
+    ${zipBadge}
+    <h2 class="center-card__name">${escapeHtml(center.name)}</h2>
+    <p class="center-card__row">
+      <span class="center-card__icon" aria-hidden="true">📍</span>
+      <span>${escapeHtml(center.address)}</span>
+    </p>
+    <p class="center-card__row center-card__phone">
+      <span class="center-card__icon" aria-hidden="true">📞</span>
+      <a href="tel:${center.phone.replace(/-/g, "")}">${escapeHtml(center.phone)}</a>
+    </p>
+  `;
+
+  return card;
+}
+
+// 簡易的なHTMLエスケープ（表示データがユーザー入力由来になった場合の保険）
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ---------- イベント ----------
+
+searchForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const query = searchInput.value;
+  const normalizedQuery = normalizeText(query);
+
+  if (!normalizedQuery) {
+    renderResults([], "");
+    return;
+  }
+
+  searchButton.disabled = true;
+  searchButton.textContent = "検索中…";
+
+  const { data, error } = await searchCenters(query);
+
+  searchButton.disabled = false;
+  searchButton.textContent = "検索";
+
+  if (error) {
+    console.error(error);
+    renderError();
+    return;
+  }
+
+  renderResults(data, normalizedQuery);
+});
