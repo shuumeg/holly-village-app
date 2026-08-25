@@ -1,3 +1,5 @@
+import { next } from '@vercel/functions';
+
 export const config = {
   runtime: 'nodejs',
 };
@@ -10,7 +12,7 @@ export default function middleware(request) {
     const decoded = atob(authHeader.slice('Basic '.length));
     const enteredPassword = decoded.split(':').slice(1).join(':');
     if (enteredPassword === password) {
-      return;
+      return next();
     }
   }
 
