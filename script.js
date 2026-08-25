@@ -108,22 +108,28 @@ async function searchCenters(rawQuery) {
       return "exact";
     }
 
+    // "東京都町田市"のように先頭に都道府県名がついている場合は取り除く
+    // （都道府県名から入力するユーザーにも対応するため）。
+    const queryWithoutPrefecture = query.startsWith(center.prefecture)
+      ? query.slice(center.prefecture.length)
+      : query;
+
     // "川崎市多摩区"だけでなく"多摩区"のように市名を省略した入力にも対応する。
     // 一致する別名のうち最も長いものを、市区町村名部分とみなして取り除く。
     const aliases = getCityAliases(center.city);
     const prefixAlias = aliases
-      .filter((a) => query.startsWith(a))
+      .filter((a) => queryWithoutPrefecture.startsWith(a))
       .sort((a, b) => b.length - a.length)[0];
 
     let remainderTown;
     if (prefixAlias !== undefined) {
-      const rest = query.slice(prefixAlias.length);
+      const rest = queryWithoutPrefecture.slice(prefixAlias.length);
       if (rest === "") return "exact"; // クエリが市区町村名（の別名）のみ
       remainderTown = stripChome(rest);
-    } else if (aliases.some((a) => a.includes(query))) {
+    } else if (aliases.some((a) => a.includes(queryWithoutPrefecture))) {
       return "exact"; // クエリが市区町村名の一部（例："多摩"）
     } else {
-      remainderTown = stripChome(query);
+      remainderTown = stripChome(queryWithoutPrefecture);
     }
 
     if (remainderTown === "") return null;
