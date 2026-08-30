@@ -191,11 +191,35 @@ export function calcPensionGrade(c) {
   return { grade, categories, moderateOrHigh, highCount, generalStatus: gs, known };
 }
 
+// 各疾病の重症度区分の定義文。SeverityConfirmStepで、電話で医師にそのまま読み上げて
+// 「どの区分に該当するか」を確認できるよう、平易な文言のまま保持する。targetが対象区分。
+
+// バッド・キアリ症候群/特発性門脈圧亢進症の重症度Ⅰ〜Ⅴ度（門脈血行異常症の診断と治療のガイドライン2013年）
+const PORTAL_HYPERTENSION_STAGES = [
+  { label: "重症度Ⅰ", text: "診断可能だが、所見は認めない。", target: false },
+  { label: "重症度Ⅱ", text: "所見を認めるものの、治療を要しない。", target: false },
+  { label: "重症度Ⅲ", text: "所見を認め、治療を要する。", target: true },
+  { label: "重症度Ⅳ", text: "身体活動が制限され、介護も含めた治療を要する。", target: true },
+  { label: "重症度Ⅴ", text: "肝不全ないしは消化管出血を認め、集中治療を要する。", target: true },
+];
+
+// PBC（原発性胆汁性胆管炎）の臨床病期（PBC診療ガイドライン2012年）
+const PBC_STAGES = [
+  { label: "無症候性PBC（aPBC）", text: "肝障害に伴う自他覚症状を欠く。", target: false },
+  {
+    label: "症候性PBC（sPBC）",
+    text: "肝障害に基づく自他覚症状（黄疸・皮膚掻痒感・食道胃静脈瘤・腹水・肝性脳症など）を有する（s1：総ビリルビン2.0mg/dL未満／s2：2.0mg/dL以上）。",
+    target: true,
+  },
+];
+
 // ---------- 指定難病（肝疾患関連6疾病）病名・重症度分類の基準文（SeverityConfirmStepでの医師確認案内にも使用） ----------
 export const DESIGNATED_DISEASE_INFO = {
   pbc: {
     disease: "原発性胆汁性胆管炎（PBC）",
     criteria: "重症度分類：症候性PBC（黄疸・皮膚掻痒感・食道胃静脈瘤・腹水・肝性脳症のいずれかを有する）が対象。無症候性PBCは対象外。",
+    stages: PBC_STAGES,
+    stageThresholdLabel: "症候性PBC（sPBC）",
   },
   psc: {
     disease: "原発性硬化性胆管炎（PSC）",
@@ -212,10 +236,14 @@ export const DESIGNATED_DISEASE_INFO = {
   budd_chiari: {
     disease: "バッド・キアリ症候群",
     criteria: "重症度分類：門脈血行異常症の診断と治療のガイドラインにおける5因子（食道・胃・異所性静脈瘤、門脈圧亢進所見、身体活動制限、消化管出血、肝不全）のうち最も重いものによる重症度Ⅲ度以上が対象。",
+    stages: PORTAL_HYPERTENSION_STAGES,
+    stageThresholdLabel: "重症度Ⅲ度以上",
   },
   portal_hypertension: {
     disease: "特発性門脈圧亢進症",
     criteria: "重症度分類：門脈血行異常症の診断と治療のガイドラインにおける5因子（食道・胃・異所性静脈瘤、門脈圧亢進所見、身体活動制限、消化管出血、肝不全）のうち最も重いものによる重症度Ⅲ度以上が対象。",
+    stages: PORTAL_HYPERTENSION_STAGES,
+    stageThresholdLabel: "重症度Ⅲ度以上",
   },
 };
 

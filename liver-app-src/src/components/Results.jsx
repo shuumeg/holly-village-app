@@ -14,6 +14,9 @@ function generalStatusShort(id) {
   return GENERAL_STATUS_OPTIONS.find((o) => o.id === id)?.label.slice(0, 1) ?? "未回答";
 }
 
+// 「くわしい判定結果」もサマリーと同じく、対象の可能性が高いもの（緑）から順に並べる
+const STATUS_ORDER = { "status-yes": 0, "status-unknown": 1, "status-no": 2 };
+
 export default function Results({ answers, clinical }) {
   const c = useMemo(() => ({ ...clinical, currentHbvHcv: currentHbvHcv(answers) }), [clinical, answers]);
 
@@ -89,54 +92,54 @@ export default function Results({ answers, clinical }) {
       <TrafficLightSummary items={trafficItems} />
 
       <h3 className="results-subheading">くわしい判定結果</h3>
-      <PreciseCard
-        name="身体障害者手帳（肝臓機能障害）"
-        status={hb.insufficient ? "情報不足" : hb.grade === 1 && hb.reason ? "1級に該当する可能性" : hb.grade >= 1 ? `${GRADE_LABEL[hb.grade]}相当の可能性` : "現時点では非該当"}
-        statusClass={hb.insufficient ? "status-unknown" : hb.grade >= 1 ? "status-yes" : "status-no"}
-        body={handbookBody}
-        offices={[hbOffice]}
-      />
-      <PreciseCard
-        name="障害年金（肝疾患）"
-        status={pension.insufficient ? "情報不足" : pension.grade >= 1 ? `${GRADE_LABEL[pension.grade]}相当の可能性` : "現時点では非該当"}
-        statusClass={pension.insufficient ? "status-unknown" : pension.grade >= 1 ? "status-yes" : "status-no"}
-        body={pensionBody}
-        offices={[pensOffice]}
-      />
-      {diseases.map((d) => (
-        <PreciseCard
-          key={d.id}
-          name={`指定難病医療費助成（${d.disease}）`}
-          status={d.insufficient ? "情報不足／専門的評価が必要" : d.eligible ? "対象の可能性" : "現時点では非該当"}
-          statusClass={d.insufficient ? "status-unknown" : d.eligible ? "status-yes" : "status-no"}
-          body={`${d.detail}<br><span class="result-card__criteria">判定基準：${d.criteria}</span>`}
-          offices={diseaseOffices}
-        />
-      ))}
-
-      {hasVirus && (
-        <PreciseCard
-          name={subsidyRule.name}
-          status={subsidyMatched ? "対象の可能性" : "現時点では対象外"}
-          statusClass={subsidyMatched ? "status-yes" : "status-no"}
-          body={subsidyMatched
+      {[
+        {
+          key: "handbook",
+          name: "身体障害者手帳（肝臓機能障害）",
+          status: hb.insufficient ? "情報不足" : hb.grade === 1 && hb.reason ? "1級に該当する可能性" : hb.grade >= 1 ? `${GRADE_LABEL[hb.grade]}相当の可能性` : "現時点では非該当",
+          statusClass: hb.insufficient ? "status-unknown" : hb.grade >= 1 ? "status-yes" : "status-no",
+          body: handbookBody,
+          offices: [hbOffice],
+        },
+        {
+          key: "pension",
+          name: "障害年金（肝疾患）",
+          status: pension.insufficient ? "情報不足" : pension.grade >= 1 ? `${GRADE_LABEL[pension.grade]}相当の可能性` : "現時点では非該当",
+          statusClass: pension.insufficient ? "status-unknown" : pension.grade >= 1 ? "status-yes" : "status-no",
+          body: pensionBody,
+          offices: [pensOffice],
+        },
+        ...diseases.map((d) => ({
+          key: `disease-${d.id}`,
+          name: `指定難病医療費助成（${d.disease}）`,
+          status: d.insufficient ? "情報不足／専門的評価が必要" : d.eligible ? "対象の可能性" : "現時点では非該当",
+          statusClass: d.insufficient ? "status-unknown" : d.eligible ? "status-yes" : "status-no",
+          body: `${d.detail}<br><span class="result-card__criteria">判定基準：${d.criteria}</span>`,
+          offices: diseaseOffices,
+        })),
+        ...(hasVirus ? [{
+          key: "hepatitis_subsidy",
+          name: subsidyRule.name,
+          status: subsidyMatched ? "対象の可能性" : "現時点では対象外",
+          statusClass: subsidyMatched ? "status-yes" : "status-no",
+          body: subsidyMatched
             ? `${subsidyRule.reason(answers)}<br><span class="result-card__criteria">${subsidyRule.summary}</span>`
-            : "「治療済み（治療は終了）」との回答のため、現時点では対象外です。"}
-          offices={subsidyRule.offices(answers)}
-        />
-      )}
-
-      {cancerCirrhosisRelevant && (
-        <PreciseCard
-          name={cancerRule.name}
-          status={cancerMatched ? "対象の可能性" : "現時点では対象外"}
-          statusClass={cancerMatched ? "status-yes" : "status-no"}
-          body={cancerMatched
+            : "「治療済み（治療は終了）」との回答のため、現時点では対象外です。",
+          offices: subsidyRule.offices(answers),
+        }] : []),
+        ...(cancerCirrhosisRelevant ? [{
+          key: "cancer_cirrhosis",
+          name: cancerRule.name,
+          status: cancerMatched ? "対象の可能性" : "現時点では対象外",
+          statusClass: cancerMatched ? "status-yes" : "status-no",
+          body: cancerMatched
             ? `${cancerRule.reason(answers)}<br><span class="result-card__criteria">${cancerRule.summary}</span>`
-            : "B型・C型肝炎ウイルスの感染の合併が確認できないため、現時点では対象外です。"}
-          offices={cancerRule.offices(answers)}
-        />
-      )}
+            : "B型・C型肝炎ウイルスの感染の合併が確認できないため、現時点では対象外です。",
+          offices: cancerRule.offices(answers),
+        }] : []),
+      ]
+        .sort((a, b) => STATUS_ORDER[a.statusClass] - STATUS_ORDER[b.statusClass])
+        .map((card) => <PreciseCard key={card.key} {...card} />)}
 
       <h3 className="results-subheading">その他の候補となりうる制度</h3>
       {candidates.length > 0 ? (

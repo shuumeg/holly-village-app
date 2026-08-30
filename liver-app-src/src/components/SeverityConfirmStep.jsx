@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { DESIGNATED_DISEASE_INFO } from "../domain/calculations";
 import { DESIGNATED_DISEASE_IDS } from "../domain/constants";
+import MildExceptionFields from "./MildExceptionFields";
 
 const DOCTOR_ANSWER_OPTIONS = [
   { id: "eligible", label: "医師から「該当する」と回答があった" },
@@ -8,7 +9,8 @@ const DOCTOR_ANSWER_OPTIONS = [
   { id: "unknown", label: "まだ確認していない（血液検査値等から判定する）" },
 ];
 
-export default function SeverityConfirmStep({ diagnosisIds, onDone, onBack }) {
+export default function SeverityConfirmStep({ diagnosisIds, clinical, setClinical, onDone, onBack }) {
+  const setClinicalField = (key, val) => setClinical((prev) => ({ ...prev, [key]: val }));
   const [alreadyCertified, setAlreadyCertified] = useState(null); // null=未確認 | true | false
   const [doctorAnswer, setDoctorAnswer] = useState(null);
   const diseaseId = diagnosisIds.find((id) => DESIGNATED_DISEASE_IDS.includes(id));
@@ -48,10 +50,26 @@ export default function SeverityConfirmStep({ diagnosisIds, onDone, onBack }) {
     <div className="disease-step">
       <p className="qstep__title">「{info.disease}」の重症度分類</p>
       <article className="result-card">
-        <p className="result-card__summary">{info.criteria}</p>
+        {info.stages ? (
+          <>
+            <ul className="severity-stage-list">
+              {info.stages.map((s) => (
+                <li key={s.label} className={s.target ? "severity-stage--target" : ""}>
+                  <strong>{s.label}</strong>：{s.text}
+                </li>
+              ))}
+            </ul>
+            <p className="result-card__summary">{info.stageThresholdLabel}が対象です。</p>
+          </>
+        ) : (
+          <p className="result-card__summary">{info.criteria}</p>
+        )}
       </article>
       <p className="qstep__hint">
-        主治医に電話で「この重症度分類の基準に該当しますか？」と確認し、回答を選んでください。
+        重症度分類は、適切な医学的管理の下で治療を受けている状態で、<strong>直近6か月間で最も悪かった状態</strong>で判断します（今この瞬間の状態ではありません）。
+      </p>
+      <p className="qstep__hint">
+        主治医に電話で「{info.stages ? `直近6か月で最も悪かった時期は、どの区分に該当しますか（${info.stageThresholdLabel}が対象です）` : "直近6か月で最も悪かった時期は、この重症度分類の基準に該当しますか"}？」と確認し、回答を選んでください。
       </p>
 
       {!doctorAnswer && (
@@ -67,6 +85,16 @@ export default function SeverityConfirmStep({ diagnosisIds, onDone, onBack }) {
             </button>
           ))}
         </div>
+      )}
+
+      {doctorAnswer === "mild" && (
+        <fieldset className="clinical-group">
+          <legend>指定難病の軽症者特例</legend>
+          <p className="qstep__hint">
+            重症度基準を満たさない場合でも、医療費が高額な月が続いている、または今後その予定があれば対象になることがあります
+          </p>
+          <MildExceptionFields clinical={clinical} setClinicalField={setClinicalField} />
+        </fieldset>
       )}
 
       {doctorAnswer && (

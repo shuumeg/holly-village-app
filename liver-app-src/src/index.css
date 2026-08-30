@@ -522,6 +522,31 @@ body {
   margin: 4px 0;
 }
 
+.severity-stage-list {
+  margin: 0 0 10px;
+  padding-left: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.severity-stage-list li {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm, 6px);
+  margin-bottom: 4px;
+}
+
+.severity-stage-list li.severity-stage--target {
+  background-color: #ecfdf3;
+  font-weight: 700;
+}
+
+.severity-stage-list li:not(.severity-stage--target) + li.severity-stage--target {
+  margin-top: 10px;
+  padding-top: 14px;
+  border-top: 2px dashed #ef4444;
+}
+
 .result-card__extra {
   margin: 0 0 10px;
   font-size: 0.82rem;

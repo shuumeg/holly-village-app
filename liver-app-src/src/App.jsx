@@ -83,6 +83,8 @@ export default function App() {
         {step === "severity" && (
           <SeverityConfirmStep
             diagnosisIds={answers.diagnosis}
+            clinical={clinical}
+            setClinical={setClinical}
             onDone={handleSeverityDone}
             onBack={handleBackFromSeverity}
           />

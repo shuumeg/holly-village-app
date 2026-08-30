@@ -3,6 +3,7 @@ import RadioGroup from "./form/RadioGroup";
 import NumberField from "./form/NumberField";
 import SelectField from "./form/SelectField";
 import CheckFieldset from "./form/CheckFieldset";
+import MildExceptionFields from "./MildExceptionFields";
 import {
   TREATMENT_OPTIONS, NUMBER_FIELDS,
   ASCITES_OPTIONS, ENCEPHALOPATHY_OPTIONS, GENERAL_STATUS_OPTIONS, LABOR_STATUS_OPTIONS,
@@ -99,21 +100,7 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
         <fieldset className="clinical-group">
           <legend>指定難病の軽症者特例</legend>
           <p className="qstep__hint">重症度基準を満たさない場合でも、医療費が高額な月が続いている、または今後その予定があれば対象になることがあります</p>
-          <NumberField
-            label="直近12か月で、医療費総額（10割相当）が33,330円を超えた月の回数"
-            unit="回"
-            step="1"
-            value={clinical.highCostMonths}
-            onChange={(v) => setClinicalField("highCostMonths", v)}
-          />
-          <label className="clinical-check">
-            <input
-              type="checkbox"
-              checked={!!clinical.plannedHighCostDrug}
-              onChange={(e) => setClinicalField("plannedHighCostDrug", e.target.checked)}
-            />
-            <span>今後、高額な医薬品（分子標的薬・生物学的製剤等）による治療開始を予定している</span>
-          </label>
+          <MildExceptionFields clinical={clinical} setClinicalField={setClinicalField} />
         </fieldset>
       )}
 
