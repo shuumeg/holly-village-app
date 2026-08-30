@@ -213,6 +213,19 @@ const PBC_STAGES = [
   },
 ];
 
+// 自己免疫性肝炎の重症度判定（自己免疫性肝炎診療ガイドライン2021年）。
+// 元の基準表と同じく、臨床所見①②・検査所見①②③の番号を先に示し、各重症度の枠内はその番号で参照する。
+const AIH_CRITERIA_GROUPS = [
+  { title: "臨床所見", items: ["① 肝性脳症あり", "② 肝萎縮あり"] },
+  { title: "臨床検査所見", items: ["① AST または ALT ＞ 200 U/l", "② 総ビリルビン ＞ 5mg/dl", "③ プロトロンビン時間（PT-INR）≧ 1.3"] },
+];
+
+const AIH_STAGES = [
+  { label: "軽症", text: "臨床所見：①、②、検査所見：①、②、③のいずれも見られない。", target: false },
+  { label: "中等症", text: "臨床所見：①、②、検査所見：③が見られず、検査所見：①または②が見られる。", target: true },
+  { label: "重症", text: "次のいずれかが見られる：臨床所見：①または②／検査所見：③", target: true },
+];
+
 // ---------- 指定難病（肝疾患関連6疾病）病名・重症度分類の基準文（SeverityConfirmStepでの医師確認案内にも使用） ----------
 export const DESIGNATED_DISEASE_INFO = {
   pbc: {
@@ -228,6 +241,9 @@ export const DESIGNATED_DISEASE_INFO = {
   aih: {
     disease: "自己免疫性肝炎",
     criteria: "重症度分類：自己免疫性肝炎診療ガイドライン中等症以上（臨床所見：肝性脳症・肝萎縮／検査所見：AST orALT>200、総Bil>5mg/dL、PT-INR≧1.3）、または肝硬変の診断のいずれかで対象。",
+    criteriaGroups: AIH_CRITERIA_GROUPS,
+    stages: AIH_STAGES,
+    stageThresholdLabel: "中等症以上（または組織学的・臨床的に肝硬変と診断される症例）",
   },
   wilson: {
     disease: "ウィルソン病",
@@ -524,7 +540,7 @@ export function designatedDiseaseOffices(answers) {
   if (answers.residence === "kawasaki") {
     return [
       { label: "制度の相談", name: "川崎市 指定難病医療費助成コールセンター", phone: "044-200-1979", note: "平日9:00〜17:00" },
-      ...(w ? [{ label: "申請窓口", name: `${w.label}役所 保健福祉センター`, phone: w.diseasePhone }] : []),
+      ...(w ? [{ label: "申請窓口", name: `${w.label}役所 地域みまもり支援センター（福祉事務所・保健所支所）地域ケア推進課`, phone: w.diseasePhone }] : []),
     ];
   }
   return [{ name: MUNICIPALITIES[answers.residence]?.offices.designatedDisease || "お住まいを管轄する保健所" }];

@@ -148,7 +148,7 @@ export const MUNICIPALITIES = {
     label: "川崎市",
     offices: {
       disabilityHandbook: "お住まいの区役所 高齢・障害課（障害者支援係）",
-      designatedDisease: "お住まいの区役所 保健福祉センター（指定難病医療費助成 申請窓口）",
+      designatedDisease: "お住まいの区役所 地域みまもり支援センター（福祉事務所・保健所支所）地域ケア推進課（指定難病医療費助成 申請窓口）",
       hepatitisTest: "川崎市健康福祉局 保健医療政策部 感染症対策課",
     },
     screeningNote:

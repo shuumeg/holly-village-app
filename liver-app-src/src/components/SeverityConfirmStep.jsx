@@ -52,6 +52,18 @@ export default function SeverityConfirmStep({ diagnosisIds, clinical, setClinica
       <article className="result-card">
         {info.stages ? (
           <>
+            {info.criteriaGroups && (
+              <div className="severity-criteria-groups">
+                {info.criteriaGroups.map((g) => (
+                  <div key={g.title} className="severity-criteria-group">
+                    <strong>{g.title}</strong>
+                    <ul>
+                      {g.items.map((it) => <li key={it}>{it}</li>)}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
             <ul className="severity-stage-list">
               {info.stages.map((s) => (
                 <li key={s.label} className={s.target ? "severity-stage--target" : ""}>
