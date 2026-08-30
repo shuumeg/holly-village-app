@@ -44,6 +44,9 @@ export function diseaseTrafficLight(d) {
   if (d.tier === "insufficient") {
     return { emoji: "🟡", level: "caution", text: "情報不足、または専門的な評価が必要です" };
   }
+  if (d.mildException) {
+    return { emoji: "🟢", level: "high", text: "該当の可能性が高いです（軽症者特例）" };
+  }
   if (d.tier === "severe" || d.tier === "eligible") {
     return { emoji: "🟢", level: "high", text: "該当の可能性が高いです（重症度基準クリア）" };
   }

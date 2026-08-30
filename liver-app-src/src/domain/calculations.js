@@ -31,6 +31,24 @@ export function kawasakiWard(answers) {
   return answers.residence === "kawasaki" && answers.ward ? KAWASAKI_WARDS[answers.ward] : null;
 }
 
+// ---------- バッド・キアリ症候群/特発性門脈圧亢進症 重症度分類（5因子、門脈血行異常症の診断と治療のガイドライン） ----------
+const BC_VARIX_STAGE = { none: 1, present: 2, high_risk: 3, bled: 4 };
+const BC_PORTAL_SIGN_STAGE = { none: 1, untreated: 2, treated: 3 };
+const BC_ACTIVITY_STAGE = { none: 1, mild: 3, severe: 4 };
+const STAGE_ROMAN = { 1: "Ⅰ", 2: "Ⅱ", 3: "Ⅲ", 4: "Ⅳ", 5: "Ⅴ" };
+
+export function calcPortalHypertensionStage(c) {
+  const bil = numOrNull(c.bilirubin);
+  const liverFailure = !!(bil != null && bil >= 3 && c.encephalopathy && (c.encephalopathy === "2" || c.encephalopathy === "3plus"));
+  const giBleeding = !!c.bcGiBleeding;
+  const varixStage = BC_VARIX_STAGE[c.bcVarix] ?? 1;
+  const portalSignStage = BC_PORTAL_SIGN_STAGE[c.bcPortalSign] ?? 1;
+  const activityStage = BC_ACTIVITY_STAGE[c.bcActivity] ?? 1;
+  const factorStage = Math.max(varixStage, portalSignStage, activityStage);
+  const stage = liverFailure || giBleeding ? 5 : factorStage;
+  return { stage, roman: STAGE_ROMAN[stage], liverFailure, giBleeding, varixStage, portalSignStage, activityStage };
+}
+
 // ---------- Child-Pugh分類（身体障害者手帳・ウィルソン病肝障害パスで使用） ----------
 function childPughPoint(key, v) {
   if (v == null) return null;
@@ -251,20 +269,16 @@ export function evalDesignatedDiseases(answers, c) {
   }
 
   if (has(answers.diagnosis, "budd_chiari") || has(answers.diagnosis, "portal_hypertension")) {
-    const bil = numOrNull(c.bilirubin);
-    const liverFailure = !!(bil != null && bil >= 3 && c.encephalopathy && (c.encephalopathy === "2" || c.encephalopathy === "3plus"));
-    const severeV = liverFailure || !!c.giBleeding;
+    const ph = calcPortalHypertensionStage(c);
+    const eligible = ph.stage >= 3;
     const name = has(answers.diagnosis, "budd_chiari") ? "バッド・キアリ症候群" : "特発性門脈圧亢進症";
     results.push({
       id: has(answers.diagnosis, "budd_chiari") ? "budd_chiari" : "portal_hypertension",
       disease: name,
-      eligible: severeV ? true : null,
-      tier: severeV ? "eligible" : "insufficient",
-      insufficient: !severeV,
-      detail: severeV
-        ? "血清総ビリルビン値3mg/dL以上かつ肝性脳症Ⅱ度以上（肝不全）、または消化管出血の所見があり、重症度Ⅴ度相当の可能性があります。"
-        : "門脈血行異常症診断と治療のガイドラインの重症度分類（食道胃静脈瘤・門脈圧亢進所見・身体活動制限・消化管出血・肝不全の5因子）でⅢ度以上が対象です。5因子すべての専門的評価が必要なため、本ツールでは概算のみとしています。",
-      criteria: "重症度分類：門脈血行異常症の診断と治療のガイドラインにおける重症度分類Ⅲ度以上（5因子：食道胃静脈瘤、門脈圧亢進所見、身体活動制限、消化管出血、肝不全）が対象。",
+      eligible,
+      tier: eligible ? "eligible" : "mild",
+      detail: `5因子（食道・胃・異所性静脈瘤、門脈圧亢進所見、身体活動制限、消化管出血、肝不全）のうち最も重い所見から、重症度分類は${ph.roman}度相当です。${eligible ? "Ⅲ度以上のため対象です。" : "Ⅲ度未満のため、現時点の回答では原則対象外です。"}`,
+      criteria: "重症度分類：門脈血行異常症の診断と治療のガイドラインにおける5因子（食道・胃・異所性静脈瘤、門脈圧亢進所見、身体活動制限、消化管出血、肝不全）のうち最も重いものによる重症度Ⅲ度以上が対象。",
     });
   }
 

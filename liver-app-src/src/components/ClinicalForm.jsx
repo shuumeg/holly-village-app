@@ -8,6 +8,7 @@ import {
   ASCITES_OPTIONS, ENCEPHALOPATHY_OPTIONS, GENERAL_STATUS_OPTIONS, LABOR_STATUS_OPTIONS,
   CHECK_GROUPS, ALP_RATIO_OPTIONS, LIVER_TRANSPLANT_OPTIONS,
   SCREENING_OPTIONS, RESIDENCE_OPTIONS, WARD_OPTIONS, DESIGNATED_DISEASE_IDS,
+  BC_VARIX_OPTIONS, BC_PORTAL_SIGN_OPTIONS, BC_ACTIVITY_OPTIONS,
 } from "../domain/constants";
 
 export default function ClinicalForm({ answers, setAnswers, clinical, setClinical }) {
@@ -17,6 +18,7 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
 
   const hasHepatitisVirus = answers.diagnosis.includes("hbv") || answers.diagnosis.includes("hcv");
   const isDesignatedDisease = answers.diagnosis.some((id) => DESIGNATED_DISEASE_IDS.includes(id));
+  const hasPortalHypertensionDisease = answers.diagnosis.includes("budd_chiari") || answers.diagnosis.includes("portal_hypertension");
 
   return (
     <div className="clinical-form">
@@ -72,6 +74,24 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
         <fieldset className="clinical-group">
           <legend>ALP値（原発性硬化性胆管炎の判定に使用）</legend>
           <SelectField label="ALP" options={ALP_RATIO_OPTIONS} value={clinical.alpRatio === "unknown" ? null : clinical.alpRatio} onChange={(v) => setClinicalField("alpRatio", v || "unknown")} />
+        </fieldset>
+      )}
+
+      {hasPortalHypertensionDisease && (
+        <fieldset className="clinical-group">
+          <legend>重症度分類の5因子（バッド・キアリ症候群/特発性門脈圧亢進症の判定に使用）</legend>
+          <p className="qstep__hint">血清総ビリルビン値・肝性脳症は上の項目を使用します。あわせて以下もご確認ください。</p>
+          <SelectField label="食道・胃・異所性静脈瘤" options={BC_VARIX_OPTIONS} value={clinical.bcVarix} onChange={(v) => setClinicalField("bcVarix", v)} />
+          <SelectField label="門脈圧亢進所見" options={BC_PORTAL_SIGN_OPTIONS} value={clinical.bcPortalSign} onChange={(v) => setClinicalField("bcPortalSign", v)} />
+          <SelectField label="身体活動制限" options={BC_ACTIVITY_OPTIONS} value={clinical.bcActivity} onChange={(v) => setClinicalField("bcActivity", v)} />
+          <label className="clinical-check">
+            <input
+              type="checkbox"
+              checked={!!clinical.bcGiBleeding}
+              onChange={(e) => setClinicalField("bcGiBleeding", e.target.checked)}
+            />
+            <span>現在、活動性または治療抵抗性の消化管出血がある</span>
+          </label>
         </fieldset>
       )}
 

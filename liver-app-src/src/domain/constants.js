@@ -78,6 +78,26 @@ export const CHECK_GROUPS = [
   },
 ];
 
+// ---------- バッド・キアリ症候群/特発性門脈圧亢進症の重症度分類（5因子） ----------
+export const BC_VARIX_OPTIONS = [
+  { id: "none", label: "なし" },
+  { id: "present", label: "あり（易出血性ではない）" },
+  { id: "high_risk", label: "易出血性（F2以上、または発赤所見あり）で、出血の既往はない" },
+  { id: "bled", label: "易出血性で、出血の既往もある" },
+];
+
+export const BC_PORTAL_SIGN_OPTIONS = [
+  { id: "none", label: "なし" },
+  { id: "untreated", label: "所見はあるが治療は不要（門脈圧亢進性脾腫・腹水・静脈血・貧血等）" },
+  { id: "treated", label: "治療を要する所見がある" },
+];
+
+export const BC_ACTIVITY_OPTIONS = [
+  { id: "none", label: "制限なし" },
+  { id: "mild", label: "活動制限はあるが歩行や身の回りのことはでき、日中の50％以上は起居している" },
+  { id: "severe", label: "介助を要し、日中の50％以上は就床している" },
+];
+
 export const ALP_RATIO_OPTIONS = [
   { id: "normal", label: "施設基準値上限の2倍未満" },
   { id: "high", label: "施設基準値上限の2倍以上" },
@@ -179,6 +199,7 @@ export const INITIAL_CLINICAL = {
   jaundice: false, pruritus: false, cholangitis: false, giBleeding: false, cholangiocarcinoma: false, liverAtrophy: false,
   noAlcohol180: false, activeTreatment: false, twoExamsConfirmed: false,
   alpRatio: "unknown", liverTransplant: "none", highCostMonths: "", plannedHighCostDrug: false,
+  bcVarix: null, bcPortalSign: null, bcActivity: null, bcGiBleeding: false,
 };
 
 // 指定難病の判定対象6疾病（軽症者特例の入力欄などをこの6疾病でのみ表示するために使用）

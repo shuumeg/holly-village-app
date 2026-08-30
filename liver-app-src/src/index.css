@@ -407,20 +407,6 @@ body {
 .traffic-card--low {
   background-color: #f8fafc;
   border-color: var(--color-border);
-  padding: 12px 14px;
-}
-
-.traffic-card--low .traffic-card__emoji {
-  font-size: 1.4rem;
-  margin-bottom: 4px;
-}
-
-.traffic-card--low .traffic-card__name {
-  font-size: 0.82rem;
-}
-
-.traffic-card--low .traffic-card__text {
-  font-size: 0.75rem;
 }
 
 .traffic-card__emoji {
