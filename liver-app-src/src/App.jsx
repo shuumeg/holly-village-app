@@ -1,10 +1,12 @@
 import { useState } from "react";
 import DiseaseNameStep from "./components/DiseaseNameStep";
 import HepatitisCoInfectionStep from "./components/HepatitisCoInfectionStep";
+import SeverityConfirmStep from "./components/SeverityConfirmStep";
+import ResidenceOnlyStep from "./components/ResidenceOnlyStep";
 import CandidatePreviewStep from "./components/CandidatePreviewStep";
 import ClinicalForm from "./components/ClinicalForm";
 import Results from "./components/Results";
-import { INITIAL_ANSWERS, INITIAL_CLINICAL } from "./domain/constants";
+import { INITIAL_ANSWERS, INITIAL_CLINICAL, DESIGNATED_DISEASE_IDS } from "./domain/constants";
 import "./App.css";
 
 // 肝硬変・肝がんはB型/C型肝炎の合併有無で「肝がん・重度肝硬変治療研究促進事業」等の
@@ -12,7 +14,7 @@ import "./App.css";
 const NEEDS_HEPATITIS_CHECK = ["cirrhosis_compensated", "cirrhosis_decompensated", "liver_cancer"];
 
 export default function App() {
-  const [step, setStep] = useState("name"); // "name" | "hepatitis" | "candidates" | "clinical" | "results"
+  const [step, setStep] = useState("name"); // "name" | "hepatitis" | "severity" | "residenceOnly" | "candidates" | "clinical" | "results"
   const [answers, setAnswers] = useState(INITIAL_ANSWERS);
   const [clinical, setClinical] = useState(INITIAL_CLINICAL);
 
@@ -23,17 +25,32 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const afterNameOrHepatitis = (diagnosisId) => {
+    goTo(DESIGNATED_DISEASE_IDS.includes(diagnosisId) ? "severity" : "candidates");
+  };
+
   const handleNameConfirm = (diagnosisId, label) => {
     setAnswers((prev) => ({ ...prev, diagnosis: [diagnosisId], diagnosisLabel: label }));
-    goTo(NEEDS_HEPATITIS_CHECK.includes(diagnosisId) ? "hepatitis" : "candidates");
+    if (NEEDS_HEPATITIS_CHECK.includes(diagnosisId)) return goTo("hepatitis");
+    afterNameOrHepatitis(diagnosisId);
   };
 
   const handleHepatitisConfirm = (virusId) => {
     setAnswers((prev) => ({ ...prev, diagnosis: virusId ? [prev.diagnosis[0], virusId] : [prev.diagnosis[0]] }));
-    goTo("candidates");
+    afterNameOrHepatitis(answers.diagnosis[0]);
+  };
+
+  const handleBackFromSeverity = () => {
+    goTo(NEEDS_HEPATITIS_CHECK.includes(answers.diagnosis[0]) ? "hepatitis" : "name");
+  };
+
+  const handleSeverityDone = (diseaseId, doctorAnswer, continueFlag) => {
+    setAnswers((prev) => ({ ...prev, doctorSeverity: { ...prev.doctorSeverity, [diseaseId]: doctorAnswer } }));
+    goTo(continueFlag ? "candidates" : "residenceOnly");
   };
 
   const handleBackFromCandidates = () => {
+    if (DESIGNATED_DISEASE_IDS.includes(answers.diagnosis[0])) return goTo("severity");
     goTo(NEEDS_HEPATITIS_CHECK.includes(answers.diagnosis[0]) ? "hepatitis" : "name");
   };
 
@@ -60,6 +77,23 @@ export default function App() {
             primaryLabel={answers.diagnosisLabel}
             onConfirm={handleHepatitisConfirm}
             onBack={() => goTo("name")}
+          />
+        )}
+
+        {step === "severity" && (
+          <SeverityConfirmStep
+            diagnosisIds={answers.diagnosis}
+            onDone={handleSeverityDone}
+            onBack={handleBackFromSeverity}
+          />
+        )}
+
+        {step === "residenceOnly" && (
+          <ResidenceOnlyStep
+            answers={answers}
+            setAnswers={setAnswers}
+            onNext={() => goTo("results")}
+            onBack={() => goTo("severity")}
           />
         )}
 

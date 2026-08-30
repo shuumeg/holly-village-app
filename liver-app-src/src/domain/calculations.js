@@ -191,6 +191,57 @@ export function calcPensionGrade(c) {
   return { grade, categories, moderateOrHigh, highCount, generalStatus: gs, known };
 }
 
+// ---------- 指定難病（肝疾患関連6疾病）病名・重症度分類の基準文（SeverityConfirmStepでの医師確認案内にも使用） ----------
+export const DESIGNATED_DISEASE_INFO = {
+  pbc: {
+    disease: "原発性胆汁性胆管炎（PBC）",
+    criteria: "重症度分類：症候性PBC（黄疸・皮膚掻痒感・食道胃静脈瘤・腹水・肝性脳症のいずれかを有する）が対象。無症候性PBCは対象外。",
+  },
+  psc: {
+    disease: "原発性硬化性胆管炎（PSC）",
+    criteria: "重症度分類：有症状（黄疸・皮膚掻痒・胆管炎・腹水・消化管出血・肝性脳症・胆管癌等）、またはALPが施設基準値上限の2倍以上のいずれかで対象。",
+  },
+  aih: {
+    disease: "自己免疫性肝炎",
+    criteria: "重症度分類：自己免疫性肝炎診療ガイドライン中等症以上（臨床所見：肝性脳症・肝萎縮／検査所見：AST orALT>200、総Bil>5mg/dL、PT-INR≧1.3）、または肝硬変の診断のいずれかで対象。",
+  },
+  wilson: {
+    disease: "ウィルソン病",
+    criteria: "重症度分類：肝障害はChild-Pugh分類B・C（7点以上）、神経障害等はmRS等いずれかが3以上、腎障害はCKD重症度分類ヒートマップ赤の部分、のいずれかで対象（本ツールは肝障害パスのみ判定）。",
+  },
+  budd_chiari: {
+    disease: "バッド・キアリ症候群",
+    criteria: "重症度分類：門脈血行異常症の診断と治療のガイドラインにおける5因子（食道・胃・異所性静脈瘤、門脈圧亢進所見、身体活動制限、消化管出血、肝不全）のうち最も重いものによる重症度Ⅲ度以上が対象。",
+  },
+  portal_hypertension: {
+    disease: "特発性門脈圧亢進症",
+    criteria: "重症度分類：門脈血行異常症の診断と治療のガイドラインにおける5因子（食道・胃・異所性静脈瘤、門脈圧亢進所見、身体活動制限、消化管出血、肝不全）のうち最も重いものによる重症度Ⅲ度以上が対象。",
+  },
+};
+
+// 医師に電話で重症度基準への該当を直接確認した場合、その回答を臨床値からの自動計算より優先する。
+// 「難病の情報提供をSWに依頼した時点で、医師の中では数値的な該当は済んでいると考えられる」というユーザーの実務感覚に基づく。
+function applyDoctorOverride(result, answers) {
+  const doctorAnswer = answers.doctorSeverity?.[result.id];
+  if (doctorAnswer !== "eligible" && doctorAnswer !== "mild") return result;
+  if (doctorAnswer === "eligible") {
+    return {
+      ...result,
+      eligible: true,
+      tier: "eligible",
+      doctorConfirmed: true,
+      detail: "医師に電話で確認したところ、重症度基準に「該当する」との回答がありました。",
+    };
+  }
+  return {
+    ...result,
+    eligible: false,
+    tier: "mild",
+    doctorConfirmed: true,
+    detail: "医師に電話で確認したところ、重症度基準に「該当しない」との回答がありました。",
+  };
+}
+
 // ---------- 指定難病（肝疾患関連6疾病）該当判定 ----------
 // tier: 'severe' | 'eligible' | 'moderate' | 'mild' | 'insufficient'
 //   信号表示（🟢🟡🔴）に使う共通の重みづけ。severe/eligible→🟢、moderate/insufficient→🟡、mild→🔴
@@ -203,13 +254,13 @@ export function evalDesignatedDiseases(answers, c) {
     const stage = bil == null ? "" : bil >= 2.0 ? "（s2：総ビリルビン2.0mg/dL以上）" : "（s1：総ビリルビン2.0mg/dL未満）";
     results.push({
       id: "pbc",
-      disease: "原発性胆汁性胆管炎（PBC）",
+      disease: DESIGNATED_DISEASE_INFO.pbc.disease,
       eligible: symptomatic,
       tier: symptomatic ? "eligible" : "mild",
       detail: symptomatic
         ? `症候性PBCに該当する所見（黄疸・皮膚掻痒感・食道胃静脈瘤・腹水・肝性脳症のいずれか）があります${stage}。`
         : "無症候性PBC（黄疸・皮膚掻痒感・静脈瘤・腹水・肝性脳症のいずれも認めない）は原則対象外です。症状が出現した場合に再検討してください。",
-      criteria: "重症度分類：症候性PBC（黄疸・皮膚掻痒感・食道胃静脈瘤・腹水・肝性脳症のいずれかを有する）が対象。無症候性PBCは対象外。",
+      criteria: DESIGNATED_DISEASE_INFO.pbc.criteria,
     });
   }
 
@@ -219,13 +270,13 @@ export function evalDesignatedDiseases(answers, c) {
     const eligible = symptomatic || alpHigh;
     results.push({
       id: "psc",
-      disease: "原発性硬化性胆管炎（PSC）",
+      disease: DESIGNATED_DISEASE_INFO.psc.disease,
       eligible,
       tier: eligible ? "eligible" : "mild",
       detail: eligible
         ? `${symptomatic ? "有症状（黄疸・皮膚掻痒・胆管炎・腹水・消化管出血・肝性脳症・胆管癌のいずれか）に該当します。" : ""}${alpHigh ? "ALPが施設基準値上限の2倍以上です。" : ""}`
         : "有症状の所見がなく、ALP値も基準上限の2倍未満（または未確認）です。ALP値をご確認のうえ再度判定してください。",
-      criteria: "重症度分類：有症状（黄疸・皮膚掻痒・胆管炎・腹水・消化管出血・肝性脳症・胆管癌等）、またはALPが施設基準値上限の2倍以上のいずれかで対象。",
+      criteria: DESIGNATED_DISEASE_INFO.psc.criteria,
     });
   }
 
@@ -240,13 +291,13 @@ export function evalDesignatedDiseases(answers, c) {
     const eligible = severe || moderate || cirrhosisDiagnosed;
     results.push({
       id: "aih",
-      disease: "自己免疫性肝炎",
+      disease: DESIGNATED_DISEASE_INFO.aih.disease,
       eligible,
       tier: severe || cirrhosisDiagnosed ? "severe" : moderate ? "moderate" : "mild",
       detail: eligible
         ? `${severe ? "重症相当（肝性脳症・肝萎縮・PT-INR1.3以上のいずれか）です。" : moderate ? "中等症相当（AST/ALT>200、総ビリルビン>5mg/dLのいずれか）です。" : ""}${cirrhosisDiagnosed ? "肝硬変の診断があります。" : ""}`
         : "軽症相当（臨床所見・検査所見のいずれも認めない）です。経過観察のうえ、悪化時に再度判定してください。",
-      criteria: "重症度分類：自己免疫性肝炎診療ガイドライン中等症以上（臨床所見：肝性脳症・肝萎縮／検査所見：AST orALT>200、総Bil>5mg/dL、PT-INR≧1.3）、または肝硬変の診断のいずれかで対象。",
+      criteria: DESIGNATED_DISEASE_INFO.aih.criteria,
     });
   }
 
@@ -255,7 +306,7 @@ export function evalDesignatedDiseases(answers, c) {
     const eligible = cp.total != null ? cp.total >= 7 : null;
     results.push({
       id: "wilson",
-      disease: "ウィルソン病",
+      disease: DESIGNATED_DISEASE_INFO.wilson.disease,
       eligible: eligible === true,
       tier: eligible === true ? "eligible" : eligible === false ? "mild" : "insufficient",
       insufficient: eligible == null,
@@ -264,33 +315,36 @@ export function evalDesignatedDiseases(answers, c) {
         : eligible === false
           ? `Child-Pugh分類の合計点数が${cp.total}点で、肝障害による基準（7点以上）を満たしません。神経症状・腎機能障害による重症度基準（mRS等）は本ツールでは判定していないため、該当する場合は難病情報センターの基準をご確認ください。`
           : "肝障害による重症度判定にはChild-Pugh分類に必要な検査値の入力が必要です。神経症状・腎機能障害による基準（mRS・CKD重症度等）は本ツール対象外のため、別途ご確認ください。",
-      criteria: "重症度分類：肝障害はChild-Pugh分類B・C（7点以上）、神経障害等はmRS等いずれかが3以上、腎障害はCKD重症度分類ヒートマップ赤の部分、のいずれかで対象（本ツールは肝障害パスのみ判定）。",
+      criteria: DESIGNATED_DISEASE_INFO.wilson.criteria,
     });
   }
 
   if (has(answers.diagnosis, "budd_chiari") || has(answers.diagnosis, "portal_hypertension")) {
     const ph = calcPortalHypertensionStage(c);
     const eligible = ph.stage >= 3;
-    const name = has(answers.diagnosis, "budd_chiari") ? "バッド・キアリ症候群" : "特発性門脈圧亢進症";
+    const id = has(answers.diagnosis, "budd_chiari") ? "budd_chiari" : "portal_hypertension";
     results.push({
-      id: has(answers.diagnosis, "budd_chiari") ? "budd_chiari" : "portal_hypertension",
-      disease: name,
+      id,
+      disease: DESIGNATED_DISEASE_INFO[id].disease,
       eligible,
       tier: eligible ? "eligible" : "mild",
       detail: `5因子（食道・胃・異所性静脈瘤、門脈圧亢進所見、身体活動制限、消化管出血、肝不全）のうち最も重い所見から、重症度分類は${ph.roman}度相当です。${eligible ? "Ⅲ度以上のため対象です。" : "Ⅲ度未満のため、現時点の回答では原則対象外です。"}`,
-      criteria: "重症度分類：門脈血行異常症の診断と治療のガイドラインにおける5因子（食道・胃・異所性静脈瘤、門脈圧亢進所見、身体活動制限、消化管出血、肝不全）のうち最も重いものによる重症度Ⅲ度以上が対象。",
+      criteria: DESIGNATED_DISEASE_INFO[id].criteria,
     });
   }
+
+  const overridden = results.map((r) => applyDoctorOverride(r, answers));
 
   // ---------- 軽症者特例 ----------
   // 重症度基準を満たさない（＝軽症、専門的評価待ちの「情報不足」は除く）場合でも、
   // (1)直近12か月に医療費総額（10割相当）が33,330円を超えた月が3回以上ある、
   // (2)今後、高額な医薬品（分子標的薬・生物学的製剤等）による治療開始を予定している、
   // のいずれかに該当すれば、指定難病医療費助成の対象になる（難病法上の軽症者特例）。
+  // 医師が「該当しない」と回答した場合も、軽症であることに変わりはないためこの特例の対象になり得る。
   const highCostMonths = numOrNull(c.highCostMonths) ?? 0;
   const plannedHighCostDrug = !!c.plannedHighCostDrug;
   if (highCostMonths >= 3 || plannedHighCostDrug) {
-    return results.map((r) => {
+    return overridden.map((r) => {
       if (r.eligible || r.insufficient) return r;
       const note = plannedHighCostDrug
         ? "今後、高額な医薬品による治療開始を予定しているとの回答から"
@@ -305,7 +359,7 @@ export function evalDesignatedDiseases(answers, c) {
     });
   }
 
-  return results;
+  return overridden;
 }
 
 // ---------- その他の制度（社会保障の一覧） ----------

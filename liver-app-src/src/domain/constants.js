@@ -189,6 +189,7 @@ export const INITIAL_ANSWERS = {
   screening: null,
   residence: null,
   ward: null,
+  doctorSeverity: {},
 };
 
 export const INITIAL_CLINICAL = {
