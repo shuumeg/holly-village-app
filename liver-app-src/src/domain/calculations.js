@@ -31,6 +31,32 @@ export function kawasakiWard(answers) {
   return answers.residence === "kawasaki" && answers.ward ? KAWASAKI_WARDS[answers.ward] : null;
 }
 
+// ---------- ウィルソン病 腎障害パス：CKD重症度分類ヒートマップ（赤の部分が対象） ----------
+function ckdGfrStage(egfr) {
+  if (egfr == null) return null;
+  if (egfr >= 90) return "G1";
+  if (egfr >= 60) return "G2";
+  if (egfr >= 45) return "G3a";
+  if (egfr >= 30) return "G3b";
+  if (egfr >= 15) return "G4";
+  return "G5";
+}
+
+function ckdProteinuriaStage(proteinuria) {
+  if (proteinuria == null) return null;
+  if (proteinuria < 0.15) return "A1";
+  if (proteinuria < 0.5) return "A2";
+  return "A3";
+}
+
+// ヒートマップの赤マスのみtrueを返す（G1・G2は赤なし、G3a赤はA3のみ、G3b赤はA2・A3、G4・G5は全A区分が赤）
+function ckdIsRed(gStage, aStage) {
+  if (gStage === "G4" || gStage === "G5") return true;
+  if (gStage === "G3b") return aStage === "A2" || aStage === "A3";
+  if (gStage === "G3a") return aStage === "A3";
+  return false;
+}
+
 // ---------- バッド・キアリ症候群/特発性門脈圧亢進症 重症度分類（5因子、門脈血行異常症の診断と治療のガイドライン） ----------
 const BC_VARIX_STAGE = { none: 1, present: 2, high_risk: 3, bled: 4 };
 const BC_PORTAL_SIGN_STAGE = { none: 1, untreated: 2, treated: 3 };
@@ -226,6 +252,20 @@ const AIH_STAGES = [
   { label: "重症", text: "次のいずれかが見られる：臨床所見：①または②／検査所見：③", target: true },
 ];
 
+// PSC（原発性硬化性胆管炎）の重症度分類
+const PSC_STAGES = [
+  {
+    label: "非該当",
+    text: "有症状（黄疸・皮膚掻痒・胆管炎・腹水・消化管出血・肝性脳症・胆管癌など）の所見がなく、ALPも施設基準値上限の2倍未満。",
+    target: false,
+  },
+  {
+    label: "該当",
+    text: "有症状（黄疸・皮膚掻痒・胆管炎・腹水・消化管出血・肝性脳症・胆管癌など）、またはALPが施設基準値上限の2倍以上のいずれかを満たす。",
+    target: true,
+  },
+];
+
 // ---------- 指定難病（肝疾患関連6疾病）病名・重症度分類の基準文（SeverityConfirmStepでの医師確認案内にも使用） ----------
 export const DESIGNATED_DISEASE_INFO = {
   pbc: {
@@ -237,6 +277,8 @@ export const DESIGNATED_DISEASE_INFO = {
   psc: {
     disease: "原発性硬化性胆管炎（PSC）",
     criteria: "重症度分類：有症状（黄疸・皮膚掻痒・胆管炎・腹水・消化管出血・肝性脳症・胆管癌等）、またはALPが施設基準値上限の2倍以上のいずれかで対象。",
+    stages: PSC_STAGES,
+    stageThresholdLabel: "「該当」",
   },
   aih: {
     disease: "自己免疫性肝炎",
@@ -247,7 +289,7 @@ export const DESIGNATED_DISEASE_INFO = {
   },
   wilson: {
     disease: "ウィルソン病",
-    criteria: "重症度分類：肝障害はChild-Pugh分類B・C（7点以上）、神経障害等はmRS等いずれかが3以上、腎障害はCKD重症度分類ヒートマップ赤の部分、のいずれかで対象（本ツールは肝障害パスのみ判定）。",
+    criteria: "重症度分類：肝障害はChild-Pugh分類B・C（7点以上）、腎障害はCKD重症度分類ヒートマップ赤の部分、神経障害等はmRS等いずれかが3以上、のいずれかで対象（本ツールは肝障害・腎障害パスを判定。神経障害パスは未対応）。",
   },
   budd_chiari: {
     disease: "バッド・キアリ症候群",
@@ -347,18 +389,35 @@ export function evalDesignatedDiseases(answers, c) {
 
   if (has(answers.diagnosis, "wilson")) {
     const cp = calcChildPugh(c);
-    const eligible = cp.total != null ? cp.total >= 7 : null;
+    const liverEligible = cp.total != null ? cp.total >= 7 : null;
+
+    const egfr = numOrNull(c.wilsonEgfr);
+    const proteinuria = numOrNull(c.wilsonProteinuria);
+    const gStage = ckdGfrStage(egfr);
+    const aStage = ckdProteinuriaStage(proteinuria);
+    const renalEligible = gStage != null && aStage != null ? ckdIsRed(gStage, aStage) : null;
+
+    const eligible = liverEligible === true || renalEligible === true;
+    const bothConfirmedNotEligible = liverEligible === false && renalEligible === false;
+
+    const liverText = liverEligible === true
+      ? `肝障害はChild-Pugh分類の合計点数が${cp.total}点（B〜C相当、7点以上）で該当します。`
+      : liverEligible === false
+        ? `肝障害はChild-Pugh分類の合計点数が${cp.total}点で、基準（7点以上）を満たしません。`
+        : "肝障害の判定にはChild-Pugh分類に必要な検査値の入力が必要です。";
+    const renalText = renalEligible === true
+      ? `腎障害はeGFR ${egfr}（${gStage}）・蛋白尿区分${aStage}で、CKD重症度分類ヒートマップの赤の部分に該当します。`
+      : renalEligible === false
+        ? `腎障害はeGFR ${egfr}（${gStage}）・蛋白尿区分${aStage}で、CKD重症度分類ヒートマップの赤の部分に該当しません。`
+        : "腎障害の判定にはeGFR・尿蛋白定量（または尿蛋白/Cr比）の入力が必要です。";
+
     results.push({
       id: "wilson",
       disease: DESIGNATED_DISEASE_INFO.wilson.disease,
-      eligible: eligible === true,
-      tier: eligible === true ? "eligible" : eligible === false ? "mild" : "insufficient",
-      insufficient: eligible == null,
-      detail: eligible === true
-        ? `Child-Pugh分類の合計点数が${cp.total}点（B〜C相当、7点以上）のため、肝障害による重症度基準を満たします。`
-        : eligible === false
-          ? `Child-Pugh分類の合計点数が${cp.total}点で、肝障害による基準（7点以上）を満たしません。神経症状・腎機能障害による重症度基準（mRS等）は本ツールでは判定していないため、該当する場合は難病情報センターの基準をご確認ください。`
-          : "肝障害による重症度判定にはChild-Pugh分類に必要な検査値の入力が必要です。神経症状・腎機能障害による基準（mRS・CKD重症度等）は本ツール対象外のため、別途ご確認ください。",
+      eligible,
+      tier: eligible ? "eligible" : bothConfirmedNotEligible ? "mild" : "insufficient",
+      insufficient: !eligible && !bothConfirmedNotEligible,
+      detail: `${liverText}${renalText}${!eligible ? "神経症状による重症度基準（mRS等）は本ツールでは判定していないため、該当する場合は難病情報センターの基準をご確認ください。" : ""}`,
       criteria: DESIGNATED_DISEASE_INFO.wilson.criteria,
     });
   }

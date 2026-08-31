@@ -20,6 +20,7 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
   const hasHepatitisVirus = answers.diagnosis.includes("hbv") || answers.diagnosis.includes("hcv");
   const isDesignatedDisease = answers.diagnosis.some((id) => DESIGNATED_DISEASE_IDS.includes(id));
   const hasPortalHypertensionDisease = answers.diagnosis.includes("budd_chiari") || answers.diagnosis.includes("portal_hypertension");
+  const hasWilson = answers.diagnosis.includes("wilson");
 
   return (
     <div className="clinical-form">
@@ -93,6 +94,27 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
             />
             <span>現在、活動性または治療抵抗性の消化管出血がある</span>
           </label>
+        </fieldset>
+      )}
+
+      {hasWilson && (
+        <fieldset className="clinical-group">
+          <legend>腎機能検査値（ウィルソン病の腎障害パスの判定に使用）</legend>
+          <p className="qstep__hint">Child-Pugh分類（上の血液検査値・腹水・肝性脳症）で基準を満たさない場合、こちらのCKD重症度分類も確認します。</p>
+          <NumberField
+            label="eGFR"
+            unit="mL/分/1.73㎡"
+            step="0.1"
+            value={clinical.wilsonEgfr}
+            onChange={(v) => setClinicalField("wilsonEgfr", v)}
+          />
+          <NumberField
+            label="尿蛋白定量（またはそれに相当する尿蛋白/Cr比）"
+            unit="g/日（またはg/gCr）"
+            step="0.01"
+            value={clinical.wilsonProteinuria}
+            onChange={(v) => setClinicalField("wilsonProteinuria", v)}
+          />
         </fieldset>
       )}
 
