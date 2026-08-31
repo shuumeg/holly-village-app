@@ -50,20 +50,23 @@ export default function SeverityConfirmStep({ diagnosisIds, clinical, setClinica
     <div className="disease-step">
       <p className="qstep__title">「{info.disease}」の重症度分類</p>
       <article className="result-card">
-        {info.stages ? (
-          <>
-            {info.criteriaGroups && (
-              <div className="severity-criteria-groups">
-                {info.criteriaGroups.map((g) => (
-                  <div key={g.title} className="severity-criteria-group">
-                    <strong>{g.title}</strong>
-                    <ul>
-                      {g.items.map((it) => <li key={it}>{it}</li>)}
-                    </ul>
-                  </div>
-                ))}
+        <p className="result-card__summary">{info.criteria}</p>
+
+        {info.criteriaGroups && (
+          <div className="severity-criteria-groups">
+            {info.criteriaGroups.map((g) => (
+              <div key={g.title} className="severity-criteria-group">
+                <strong>{g.title}</strong>
+                <ul>
+                  {g.items.map((it) => <li key={it}>{it}</li>)}
+                </ul>
               </div>
-            )}
+            ))}
+          </div>
+        )}
+
+        {info.stages && (
+          <>
             <ul className="severity-stage-list">
               {info.stages.map((s) => (
                 <li key={s.label} className={s.target ? "severity-stage--target" : ""}>
@@ -73,8 +76,61 @@ export default function SeverityConfirmStep({ diagnosisIds, clinical, setClinica
             </ul>
             <p className="result-card__summary">{info.stageThresholdLabel}が対象です。</p>
           </>
-        ) : (
-          <p className="result-card__summary">{info.criteria}</p>
+        )}
+
+        {info.mrsScale && (
+          <>
+            <p className="qstep__hint">神経障害パス：modified Rankin Scale（mRS）</p>
+            <ul className="severity-stage-list">
+              {info.mrsScale.map((s) => (
+                <li key={s.label} className={s.target ? "severity-stage--target" : ""}>
+                  <strong>{s.label}</strong>：{s.text}
+                </li>
+              ))}
+            </ul>
+            <p className="result-card__summary">mRS 3以上が対象です。</p>
+          </>
+        )}
+
+        {info.heatmap && (
+          <div className="ckd-heatmap-wrap">
+            <p className="qstep__hint">腎障害パス：CKD重症度分類ヒートマップが赤の部分の場合、対象です。</p>
+            <table className="ckd-heatmap">
+              <thead>
+                <tr>
+                  <th colSpan={2} />
+                  {info.heatmap.columns.map((col) => (
+                    <th key={col.id}>
+                      {col.label}
+                      <br />
+                      <span className="ckd-heatmap__sub">{col.sub}</span>
+                      <br />
+                      <span className="ckd-heatmap__sub">{col.range}</span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {info.heatmap.rows.map((row, i) => (
+                  <tr key={row.id}>
+                    {i === 0 && <th rowSpan={info.heatmap.rows.length} className="ckd-heatmap__axis">GFR区分</th>}
+                    <th>
+                      {row.label}
+                      <br />
+                      <span className="ckd-heatmap__sub">{row.sub}</span>
+                      <br />
+                      <span className="ckd-heatmap__sub">{row.range}</span>
+                    </th>
+                    {row.colors.map((color, j) => (
+                      <td key={j} className={`ckd-heatmap__cell ckd-heatmap__cell--${color}`}>
+                        {{ green: "緑", yellow: "黄", orange: "オレンジ", red: "赤" }[color]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </article>
       <p className="qstep__hint">

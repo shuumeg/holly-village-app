@@ -573,6 +573,64 @@ body {
   border-top: 2px dashed #ef4444;
 }
 
+.ckd-heatmap-wrap {
+  overflow-x: auto;
+  margin-top: 4px;
+}
+
+.ckd-heatmap {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.ckd-heatmap th,
+.ckd-heatmap td {
+  border: 1px solid var(--color-border);
+  padding: 6px 4px;
+}
+
+.ckd-heatmap th {
+  background-color: #f7f8fa;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ckd-heatmap__sub {
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.ckd-heatmap__axis {
+  writing-mode: vertical-rl;
+}
+
+.ckd-heatmap__cell {
+  font-weight: 700;
+}
+
+.ckd-heatmap__cell--green {
+  background-color: #bbf7d0;
+  color: #166534;
+}
+
+.ckd-heatmap__cell--yellow {
+  background-color: #fef08a;
+  color: #854d0e;
+}
+
+.ckd-heatmap__cell--orange {
+  background-color: #fed7aa;
+  color: #9a3412;
+}
+
+.ckd-heatmap__cell--red {
+  background-color: #fca5a5;
+  color: #7f1d1d;
+}
+
 .result-card__extra {
   margin: 0 0 10px;
   font-size: 0.82rem;

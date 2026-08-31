@@ -57,6 +57,40 @@ function ckdIsRed(gStage, aStage) {
   return false;
 }
 
+// ---------- ウィルソン病 神経障害パス：modified Rankin Scale（mRS）、日本脳卒中学会の判定基準（mRS≧3が対象） ----------
+export const WILSON_MRS_OPTIONS = [
+  { id: "0", label: "0：まったく症候がない" },
+  { id: "1", label: "1：症候はあっても明らかな障害はない。日常の勤めや活動は行える" },
+  { id: "2", label: "2：軽度の障害。発病以前の活動が全て行えるわけではないが、自分の身の回りのことは介助なしに行える" },
+  { id: "3", label: "3：中等度の障害。何らかの介助を必要とするが、歩行は介助なしに行える" },
+  { id: "4", label: "4：中等度から重度の障害。歩行や身体的要求には介助が必要である" },
+  { id: "5", label: "5：重度の障害。寝たきり、失禁状態、常に介護と見守りを必要とする" },
+  { id: "6", label: "6：死亡" },
+];
+
+const WILSON_MRS_STAGES = WILSON_MRS_OPTIONS.map((o) => ({
+  label: `mRS ${o.id}`,
+  text: o.label.slice(o.label.indexOf("：") + 1),
+  target: Number(o.id) >= 3,
+}));
+
+// CKD重症度分類ヒートマップの図そのもの（SeverityConfirmStepでウィルソン病選択時に表示）
+export const CKD_HEATMAP = {
+  columns: [
+    { id: "A1", label: "A1", sub: "正常", range: "0.15未満" },
+    { id: "A2", label: "A2", sub: "軽度蛋白尿", range: "0.15〜0.49" },
+    { id: "A3", label: "A3", sub: "高度蛋白尿", range: "0.50以上" },
+  ],
+  rows: [
+    { id: "G1", label: "G1", sub: "正常又は高値", range: "≧90", colors: ["green", "yellow", "orange"] },
+    { id: "G2", label: "G2", sub: "正常又は軽度低下", range: "60〜89", colors: ["green", "yellow", "orange"] },
+    { id: "G3a", label: "G3a", sub: "軽度〜中等度低下", range: "45〜59", colors: ["yellow", "orange", "red"] },
+    { id: "G3b", label: "G3b", sub: "中等度〜高度低下", range: "30〜44", colors: ["orange", "red", "red"] },
+    { id: "G4", label: "G4", sub: "高度低下", range: "15〜29", colors: ["red", "red", "red"] },
+    { id: "G5", label: "G5", sub: "末期腎不全（ESKD）", range: "＜15", colors: ["red", "red", "red"] },
+  ],
+};
+
 // ---------- バッド・キアリ症候群/特発性門脈圧亢進症 重症度分類（5因子、門脈血行異常症の診断と治療のガイドライン） ----------
 const BC_VARIX_STAGE = { none: 1, present: 2, high_risk: 3, bled: 4 };
 const BC_PORTAL_SIGN_STAGE = { none: 1, untreated: 2, treated: 3 };
@@ -289,7 +323,9 @@ export const DESIGNATED_DISEASE_INFO = {
   },
   wilson: {
     disease: "ウィルソン病",
-    criteria: "重症度分類：肝障害はChild-Pugh分類B・C（7点以上）、腎障害はCKD重症度分類ヒートマップ赤の部分、神経障害等はmRS等いずれかが3以上、のいずれかで対象（本ツールは肝障害・腎障害パスを判定。神経障害パスは未対応）。",
+    criteria: "重症度分類：1)肝障害（Child-Pugh分類B・C、7点以上）、2)神経障害等（modified Rankin Scale＝mRSが3以上）、3)腎障害（CKD重症度分類ヒートマップ赤の部分）、のいずれかを満たす場合が対象。",
+    mrsScale: WILSON_MRS_STAGES,
+    heatmap: CKD_HEATMAP,
   },
   budd_chiari: {
     disease: "バッド・キアリ症候群",
@@ -397,8 +433,11 @@ export function evalDesignatedDiseases(answers, c) {
     const aStage = ckdProteinuriaStage(proteinuria);
     const renalEligible = gStage != null && aStage != null ? ckdIsRed(gStage, aStage) : null;
 
-    const eligible = liverEligible === true || renalEligible === true;
-    const bothConfirmedNotEligible = liverEligible === false && renalEligible === false;
+    const mrs = numOrNull(c.wilsonMrs);
+    const neuroEligible = mrs != null ? mrs >= 3 : null;
+
+    const eligible = liverEligible === true || renalEligible === true || neuroEligible === true;
+    const allConfirmedNotEligible = liverEligible === false && renalEligible === false && neuroEligible === false;
 
     const liverText = liverEligible === true
       ? `肝障害はChild-Pugh分類の合計点数が${cp.total}点（B〜C相当、7点以上）で該当します。`
@@ -410,14 +449,19 @@ export function evalDesignatedDiseases(answers, c) {
       : renalEligible === false
         ? `腎障害はeGFR ${egfr}（${gStage}）・蛋白尿区分${aStage}で、CKD重症度分類ヒートマップの赤の部分に該当しません。`
         : "腎障害の判定にはeGFR・尿蛋白定量（または尿蛋白/Cr比）の入力が必要です。";
+    const neuroText = neuroEligible === true
+      ? `神経障害はmRS ${mrs}で、基準（3以上）に該当します。`
+      : neuroEligible === false
+        ? `神経障害はmRS ${mrs}で、基準（3以上）を満たしません。`
+        : "神経障害の判定にはmRSの入力が必要です。";
 
     results.push({
       id: "wilson",
       disease: DESIGNATED_DISEASE_INFO.wilson.disease,
       eligible,
-      tier: eligible ? "eligible" : bothConfirmedNotEligible ? "mild" : "insufficient",
-      insufficient: !eligible && !bothConfirmedNotEligible,
-      detail: `${liverText}${renalText}${!eligible ? "神経症状による重症度基準（mRS等）は本ツールでは判定していないため、該当する場合は難病情報センターの基準をご確認ください。" : ""}`,
+      tier: eligible ? "eligible" : allConfirmedNotEligible ? "mild" : "insufficient",
+      insufficient: !eligible && !allConfirmedNotEligible,
+      detail: `${liverText}${renalText}${neuroText}`,
       criteria: DESIGNATED_DISEASE_INFO.wilson.criteria,
     });
   }

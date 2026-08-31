@@ -201,7 +201,7 @@ export const INITIAL_CLINICAL = {
   noAlcohol180: false, activeTreatment: false, twoExamsConfirmed: false,
   alpRatio: "unknown", liverTransplant: "none", highCostMonths: "", plannedHighCostDrug: false,
   bcVarix: null, bcPortalSign: null, bcActivity: null, bcGiBleeding: false,
-  wilsonEgfr: "", wilsonProteinuria: "",
+  wilsonEgfr: "", wilsonProteinuria: "", wilsonMrs: null,
 };
 
 // 指定難病の判定対象6疾病（軽症者特例の入力欄などをこの6疾病でのみ表示するために使用）

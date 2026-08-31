@@ -11,6 +11,7 @@ import {
   SCREENING_OPTIONS, RESIDENCE_OPTIONS, WARD_OPTIONS, DESIGNATED_DISEASE_IDS,
   BC_VARIX_OPTIONS, BC_PORTAL_SIGN_OPTIONS, BC_ACTIVITY_OPTIONS,
 } from "../domain/constants";
+import { WILSON_MRS_OPTIONS } from "../domain/calculations";
 
 export default function ClinicalForm({ answers, setAnswers, clinical, setClinical }) {
   const setAnswer = (key, val) => setAnswers((prev) => ({ ...prev, [key]: val }));
@@ -115,6 +116,14 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
             value={clinical.wilsonProteinuria}
             onChange={(v) => setClinicalField("wilsonProteinuria", v)}
           />
+        </fieldset>
+      )}
+
+      {hasWilson && (
+        <fieldset className="clinical-group">
+          <legend>神経症状（ウィルソン病の神経障害パスの判定に使用）</legend>
+          <p className="qstep__hint">肝障害・腎障害で基準を満たさない場合、modified Rankin Scale（mRS）も確認します。3以上が対象です。</p>
+          <SelectField label="modified Rankin Scale（mRS）" options={WILSON_MRS_OPTIONS} value={clinical.wilsonMrs} onChange={(v) => setClinicalField("wilsonMrs", v)} />
         </fieldset>
       )}
 
