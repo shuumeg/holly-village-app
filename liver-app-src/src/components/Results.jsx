@@ -139,7 +139,7 @@ export default function Results({ answers, clinical }) {
         }] : []),
       ]
         .sort((a, b) => STATUS_ORDER[a.statusClass] - STATUS_ORDER[b.statusClass])
-        .map((card) => <PreciseCard key={card.key} {...card} />)}
+        .map(({ key, ...card }) => <PreciseCard key={key} {...card} />)}
 
       <h3 className="results-subheading">その他の候補となりうる制度</h3>
       {candidates.length > 0 ? (
