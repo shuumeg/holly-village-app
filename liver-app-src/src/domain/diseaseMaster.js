@@ -23,6 +23,8 @@ export const DISEASE_MASTER = [
   // 肝がん
   { name: '肝細胞癌', icd10: 'C22.0', category: '肝がん', diagnosisId: 'liver_cancer' },
   { name: '肝内胆管癌(胆管細胞癌)', icd10: 'C22.1', category: '肝がん', diagnosisId: 'liver_cancer' },
+  { name: '肝がん', icd10: 'C22', category: '肝がん', diagnosisId: 'liver_cancer' },
+  { name: '肝癌', icd10: 'C22', category: '肝がん', diagnosisId: 'liver_cancer' },
 
   // 脂肪性肝疾患
   { name: '非アルコール性脂肪性肝疾患(NAFLD)', icd10: 'K76.0', category: '脂肪性肝疾患', diagnosisId: 'other' },
