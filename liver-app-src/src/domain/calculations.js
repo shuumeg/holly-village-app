@@ -572,7 +572,7 @@ export const RULES = [
     id: "free_test",
     name: "肝炎ウイルス無料検査",
     category: "検診",
-    match: (a) => a.screening === "never_tested",
+    match: (a) => a.screening === "never_tested" && !has(a.diagnosis, "hbv") && !has(a.diagnosis, "hcv"),
     summary: "保健所や委託医療機関で、B型・C型肝炎ウイルス検査を無料で受けられる制度です。",
     requirements: [
       "多くの自治体で、過去に受診歴がない方を対象としています",

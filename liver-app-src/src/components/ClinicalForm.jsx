@@ -146,10 +146,12 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
         />
       </fieldset>
 
-      <fieldset className="clinical-group">
-        <legend>肝炎ウイルス検査の受診歴</legend>
-        <RadioGroup name="screening" options={SCREENING_OPTIONS} value={answers.screening} onChange={(v) => setAnswer("screening", v)} />
-      </fieldset>
+      {!hasHepatitisVirus && (
+        <fieldset className="clinical-group">
+          <legend>肝炎ウイルス検査の受診歴</legend>
+          <RadioGroup name="screening" options={SCREENING_OPTIONS} value={answers.screening} onChange={(v) => setAnswer("screening", v)} />
+        </fieldset>
+      )}
 
       <fieldset className="clinical-group">
         <legend>お住まい（窓口案内に使用します）</legend>

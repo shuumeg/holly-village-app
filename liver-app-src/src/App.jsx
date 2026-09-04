@@ -18,7 +18,11 @@ export default function App() {
   const [answers, setAnswers] = useState(INITIAL_ANSWERS);
   const [clinical, setClinical] = useState(INITIAL_CLINICAL);
 
-  const canSubmit = answers.screening && answers.residence && (answers.residence !== "kawasaki" || answers.ward);
+  const hasHepatitisVirus = answers.diagnosis.includes("hbv") || answers.diagnosis.includes("hcv");
+  const canSubmit =
+    (answers.screening || hasHepatitisVirus) &&
+    answers.residence &&
+    (answers.residence !== "kawasaki" || answers.ward);
 
   const goTo = (next) => {
     setStep(next);
