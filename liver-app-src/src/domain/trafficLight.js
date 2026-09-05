@@ -34,7 +34,10 @@ export function pensionTrafficLight(pension) {
   return { emoji: "🟡", level: "caution", text: `${GRADE_LABEL[pension.grade]}相当・ギリギリのラインです（初診日・保険料納付要件は別途確認）` };
 }
 
-export function ruleTrafficLight(matched) {
+export function ruleTrafficLight(matched, insufficient) {
+  if (insufficient) {
+    return { emoji: "🟡", level: "caution", text: "情報不足のため判定できません（年齢・所得区分の入力で判定できます）" };
+  }
   return matched
     ? { emoji: "🟢", level: "high", text: "対象の可能性が高いです" }
     : { emoji: "🔴", level: "low", text: "現時点では対象外の可能性が高いです" };

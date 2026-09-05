@@ -16,6 +16,21 @@ export function has(list, id) {
   return list.includes(id);
 }
 
+// 肝がん・重度肝硬変治療研究促進事業の所得要件（年収約370万円以下）の判定。
+// 高額療養費の所得区分で確認する：70歳未満は区分エ・オ、70歳以上は自己負担割合が3割(現役並み)以外が対象。
+// 戻り値: true=満たす / false=満たさない / null=情報不足（年齢・所得区分が未入力）
+export function cancerCirrhosisIncomeEligible(clinical) {
+  if (clinical.ageGroup === "under70") {
+    if (!clinical.incomeTierUnder70) return null;
+    return clinical.incomeTierUnder70 === "e" || clinical.incomeTierUnder70 === "o";
+  }
+  if (clinical.ageGroup === "over70") {
+    if (!clinical.copayRatio70Plus) return null;
+    return clinical.copayRatio70Plus !== "3";
+  }
+  return null;
+}
+
 export function numOrNull(v) {
   if (v === "" || v == null) return null;
   const n = Number(v);
@@ -553,7 +568,7 @@ export const RULES = [
     summary: "肝炎ウイルスの持続感染が原因の肝がん・重度肝硬変（Child-Pugh C相当）の入院医療費について、自己負担限度額が軽減されます（所得要件あり）。",
     requirements: [
       "B型・C型肝炎ウイルスの持続感染が原因の肝がん、または重度肝硬変（Child-Pugh分類C）であること",
-      "所得要件があります（世帯の市町村民税課税年額により対象外となる場合があります）",
+      "所得要件（年収目安約370万円以下）：70歳未満は高額療養費の所得区分が「区分エ」「区分オ」、70歳以上は自己負担割合が「1割」「2割」（3割＝現役並みの場合は対象外）",
       "指定医療機関での入院治療が対象です",
     ],
     reason: (a) => {

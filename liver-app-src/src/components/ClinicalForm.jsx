@@ -10,6 +10,7 @@ import {
   CHECK_GROUPS, ALP_RATIO_OPTIONS, LIVER_TRANSPLANT_OPTIONS,
   SCREENING_OPTIONS, RESIDENCE_OPTIONS, WARD_OPTIONS, DESIGNATED_DISEASE_IDS,
   BC_VARIX_OPTIONS, BC_PORTAL_SIGN_OPTIONS, BC_ACTIVITY_OPTIONS,
+  AGE_GROUP_OPTIONS, INCOME_TIER_UNDER70_OPTIONS, COPAY_RATIO_70PLUS_OPTIONS,
 } from "../domain/constants";
 import { WILSON_MRS_OPTIONS } from "../domain/calculations";
 
@@ -22,6 +23,7 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
   const isDesignatedDisease = answers.diagnosis.some((id) => DESIGNATED_DISEASE_IDS.includes(id));
   const hasPortalHypertensionDisease = answers.diagnosis.includes("budd_chiari") || answers.diagnosis.includes("portal_hypertension");
   const hasWilson = answers.diagnosis.includes("wilson");
+  const cancerCirrhosisRelevant = answers.diagnosis.includes("liver_cancer") || answers.diagnosis.includes("cirrhosis_decompensated");
 
   return (
     <div className="clinical-form">
@@ -132,6 +134,32 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
           <legend>指定難病の軽症者特例</legend>
           <p className="qstep__hint">重症度基準を満たさない場合でも、医療費が高額な月が続いている、または今後その予定があれば対象になることがあります</p>
           <MildExceptionFields clinical={clinical} setClinicalField={setClinicalField} />
+        </fieldset>
+      )}
+
+      {cancerCirrhosisRelevant && (
+        <fieldset className="clinical-group">
+          <legend>所得区分（肝がん・重度肝硬変治療研究促進事業の所得要件の判定に使用）</legend>
+          <p className="qstep__hint">
+            この事業には所得要件（年収目安約370万円以下）があります。ご自身の高額療養費の所得区分（限度額適用認定証・保険証で確認できます）を選んでください。
+          </p>
+          <SelectField label="年齢" options={AGE_GROUP_OPTIONS} value={clinical.ageGroup} onChange={(v) => setClinicalField("ageGroup", v)} />
+          {clinical.ageGroup === "under70" && (
+            <SelectField
+              label="高額療養費の所得区分（限度額適用認定証で確認）"
+              options={INCOME_TIER_UNDER70_OPTIONS}
+              value={clinical.incomeTierUnder70}
+              onChange={(v) => setClinicalField("incomeTierUnder70", v)}
+            />
+          )}
+          {clinical.ageGroup === "over70" && (
+            <SelectField
+              label="自己負担割合（保険証・高齢受給者証で確認）"
+              options={COPAY_RATIO_70PLUS_OPTIONS}
+              value={clinical.copayRatio70Plus}
+              onChange={(v) => setClinicalField("copayRatio70Plus", v)}
+            />
+          )}
         </fieldset>
       )}
 

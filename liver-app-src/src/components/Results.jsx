@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import {
   calcHandbookGrade, calcPensionGrade, evalDesignatedDiseases,
   handbookOffice, pensionOffice, designatedDiseaseOffices,
-  currentHbvHcv, cpLabel, RULES, has,
+  currentHbvHcv, cpLabel, RULES, has, cancerCirrhosisIncomeEligible,
 } from "../domain/calculations";
 import { handbookTrafficLight, pensionTrafficLight, diseaseTrafficLight, ruleTrafficLight } from "../domain/trafficLight";
 import { GRADE_LABEL, GENERAL_STATUS_OPTIONS } from "../domain/constants";
@@ -34,7 +34,10 @@ export default function Results({ answers, clinical }) {
   const hasVirus = has(answers.diagnosis, "hbv") || has(answers.diagnosis, "hcv");
   const cancerCirrhosisRelevant = has(answers.diagnosis, "liver_cancer") || has(answers.diagnosis, "cirrhosis_decompensated");
   const subsidyMatched = hasVirus && subsidyRule.match(answers);
-  const cancerMatched = cancerCirrhosisRelevant && cancerRule.match(answers);
+  const cancerCauseMatched = cancerCirrhosisRelevant && cancerRule.match(answers);
+  const cancerIncomeEligible = cancerCirrhosisIncomeEligible(c);
+  const cancerInsufficient = cancerCauseMatched && cancerIncomeEligible === null;
+  const cancerMatched = cancerCauseMatched && cancerIncomeEligible === true;
   const EXTRACTED_RULE_IDS = ["hepatitis_subsidy", "cancer_cirrhosis"];
 
   const trafficItems = [
@@ -42,7 +45,7 @@ export default function Results({ answers, clinical }) {
     { key: "pension", name: "障害年金（肝疾患）", light: pensionTrafficLight(pension) },
     ...diseases.map((d) => ({ key: `disease-${d.id}`, name: `指定難病（${d.disease}）`, light: diseaseTrafficLight(d) })),
     ...(hasVirus ? [{ key: "hepatitis_subsidy", name: "肝炎医療費助成", light: ruleTrafficLight(subsidyMatched) }] : []),
-    ...(cancerCirrhosisRelevant ? [{ key: "cancer_cirrhosis", name: "肝がん・重度肝硬変治療研究促進事業", light: ruleTrafficLight(cancerMatched) }] : []),
+    ...(cancerCirrhosisRelevant ? [{ key: "cancer_cirrhosis", name: "肝がん・重度肝硬変治療研究促進事業", light: ruleTrafficLight(cancerMatched, cancerInsufficient) }] : []),
   ];
 
   const matched = RULES.filter((rule) => !EXTRACTED_RULE_IDS.includes(rule.id) && rule.match(answers));
@@ -130,10 +133,14 @@ export default function Results({ answers, clinical }) {
         ...(cancerCirrhosisRelevant ? [{
           key: "cancer_cirrhosis",
           name: cancerRule.name,
-          status: cancerMatched ? "対象の可能性" : "現時点では対象外",
-          statusClass: cancerMatched ? "status-yes" : "status-no",
-          body: cancerMatched
+          status: cancerInsufficient ? "情報不足" : cancerMatched ? "対象の可能性" : "現時点では対象外",
+          statusClass: cancerInsufficient ? "status-unknown" : cancerMatched ? "status-yes" : "status-no",
+          body: cancerInsufficient
+            ? `${cancerRule.reason(answers)}<br>所得要件（年収目安約370万円以下）の確認に必要な年齢・所得区分（自己負担割合）が未入力のため、対象可否を判定できません。`
+            : cancerMatched
             ? `${cancerRule.reason(answers)}<br><span class="result-card__criteria">${cancerRule.summary}</span>`
+            : cancerCauseMatched
+            ? `${cancerRule.reason(answers)}<br>所得区分（年収目安約370万円超）から、現時点では所得要件を満たさない可能性があります。`
             : "B型・C型肝炎ウイルスの感染の合併が確認できないため、現時点では対象外です。",
           offices: cancerRule.offices(answers),
         }] : []),

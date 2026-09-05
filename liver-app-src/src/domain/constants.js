@@ -182,6 +182,26 @@ export function labelOf(options, id) {
   return options.find((o) => o.id === id)?.label ?? id;
 }
 
+// 肝がん・重度肝硬変治療研究促進事業の所得要件（年収約370万円以下）の確認用
+export const AGE_GROUP_OPTIONS = [
+  { id: "under70", label: "70歳未満" },
+  { id: "over70", label: "70歳以上" },
+];
+
+export const INCOME_TIER_UNDER70_OPTIONS = [
+  { id: "a", label: "区分ア" },
+  { id: "i", label: "区分イ" },
+  { id: "u", label: "区分ウ" },
+  { id: "e", label: "区分エ" },
+  { id: "o", label: "区分オ" },
+];
+
+export const COPAY_RATIO_70PLUS_OPTIONS = [
+  { id: "1", label: "1割" },
+  { id: "2", label: "2割" },
+  { id: "3", label: "3割（現役並み）" },
+];
+
 export const INITIAL_ANSWERS = {
   diagnosis: [],
   diagnosisLabel: null,
@@ -202,6 +222,7 @@ export const INITIAL_CLINICAL = {
   alpRatio: "unknown", liverTransplant: "none", highCostMonths: "", plannedHighCostDrug: false,
   bcVarix: null, bcPortalSign: null, bcActivity: null, bcGiBleeding: false,
   wilsonEgfr: "", wilsonProteinuria: "", wilsonMrs: null,
+  ageGroup: null, incomeTierUnder70: null, copayRatio70Plus: null,
 };
 
 // 指定難病の判定対象6疾病（軽症者特例の入力欄などをこの6疾病でのみ表示するために使用）
