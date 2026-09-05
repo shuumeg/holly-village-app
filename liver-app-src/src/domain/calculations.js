@@ -10,7 +10,7 @@
    最終判断は必ず指定医・専門医の診断によること。
    ========================================================== */
 
-import { KAWASAKI_WARDS, PENSION_OFFICES, KANAGAWA_DISEASE_CONTROL, MUNICIPALITIES, TOKYO_MUNICIPALITIES } from "./constants";
+import { KAWASAKI_WARDS, PENSION_OFFICES, KANAGAWA_DISEASE_CONTROL, KANAGAWA_HEPATITIS_CONTACT, MUNICIPALITIES, TOKYO_MUNICIPALITIES } from "./constants";
 
 export function has(list, id) {
   return list.includes(id);
@@ -549,13 +549,20 @@ export const RULES = [
       return "B型・C型肝炎の診断があるとの回答から、治療を開始する場合に肝炎医療費助成の対象となる可能性があります。";
     },
     offices: (a) => {
-      if (a.residence === "outside" || a.residence === "tokyo") return [{ name: "お住まいの都道府県の担当窓口" }];
-      return [{
-        ...KANAGAWA_DISEASE_CONTROL,
-        note: a.residence === "kawasaki"
-          ? "神奈川県の制度で、川崎市専用の窓口ではありません。最寄りの保健所でも手続きできる場合があるため、政令指定都市在住である旨を伝えてご確認ください。"
-          : "手続きは、お住まいを管轄する保健所でも行えます。",
-      }];
+      if (a.residence === "tokyo") {
+        const m = TOKYO_MUNICIPALITIES[a.tokyoMunicipality];
+        if (m) return [{ name: m.officeName, phone: m.phone, note: m.phoneNote }];
+        return [{ name: "お住まいの都道府県の担当窓口" }];
+      }
+      if (a.residence === "outside") return [{ name: "お住まいの都道府県の担当窓口" }];
+      if (a.residence === "kawasaki") {
+        const w = kawasakiWard(a);
+        return [
+          { label: "制度の相談", ...KANAGAWA_HEPATITIS_CONTACT },
+          ...(w ? [{ label: "申請窓口", name: `${w.label}役所 地域みまもり支援センター（福祉事務所・保健所支所）衛生課`, phone: w.hepatitisPhone }] : []),
+        ];
+      }
+      return [{ ...KANAGAWA_HEPATITIS_CONTACT, note: "手続きは、お住まいを管轄する保健所でも行えます。" }];
     },
   },
   {
@@ -578,7 +585,7 @@ export const RULES = [
     offices: (a) => {
       if (a.residence === "tokyo") {
         const m = TOKYO_MUNICIPALITIES[a.tokyoMunicipality];
-        if (m) return [{ name: m.cancerOfficeName, phone: m.cancerPhone, note: m.cancerPhoneNote }];
+        if (m) return [{ name: m.officeName, phone: m.phone, note: m.phoneNote }];
         return [{ name: "お住まいの区市町村 障害福祉担当課" }];
       }
       if (a.residence === "outside") return [{ name: "お住まいの都道府県の担当窓口" }];
@@ -665,6 +672,11 @@ export function designatedDiseaseOffices(answers) {
       { label: "制度の相談", name: "川崎市 指定難病医療費助成コールセンター", phone: "044-200-1979", note: "平日9:00〜17:00" },
       ...(w ? [{ label: "申請窓口", name: `${w.label}役所 地域みまもり支援センター（福祉事務所・保健所支所）地域ケア推進課`, phone: w.diseasePhone }] : []),
     ];
+  }
+  if (answers.residence === "tokyo") {
+    const m = TOKYO_MUNICIPALITIES[answers.tokyoMunicipality];
+    if (m) return [{ name: m.officeName, phone: m.phone, note: m.phoneNote }];
+    return [{ name: "お住まいを管轄する保健所（特別区は区の保健所、市町村は東京都の保健所）" }];
   }
   return [{ name: MUNICIPALITIES[answers.residence]?.offices.designatedDisease || "お住まいを管轄する保健所" }];
 }

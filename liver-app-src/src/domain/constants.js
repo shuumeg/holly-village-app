@@ -122,26 +122,31 @@ export const RESIDENCE_OPTIONS = [
 
 // ---------- 自治体データ ----------
 // 電話番号は2026年8月時点で川崎市・神奈川県・日本年金機構の公式ページで確認したもの。
+// diseasePhone=指定難病医療費助成の申請窓口（区役所地域みまもり支援センター「地域ケア推進課」）
+// hepatitisPhone=肝炎医療費助成の申請窓口（同センター内の別部署「衛生課」、電話番号が異なる）
+// 出典: 神奈川県「肝炎治療受給者証の交付申請をされる方へ」（r8shinseiannai.pdf、2026年）
 export const KAWASAKI_WARDS = {
-  kawasaki_ku: { label: "川崎区", disabilityPhone: "044-201-3215", diseasePhone: "044-201-3228", pensionOffice: "kawasaki" },
-  saiwai: { label: "幸区", disabilityPhone: "044-556-6654", diseasePhone: "044-556-6643", pensionOffice: "kawasaki" },
-  nakahara: { label: "中原区", disabilityPhone: "044-744-3296", diseasePhone: "044-744-3252", pensionOffice: "takatsu" },
-  takatsu: { label: "高津区", disabilityPhone: "044-861-3252", diseasePhone: "044-861-3302", pensionOffice: "takatsu" },
-  miyamae: { label: "宮前区", disabilityPhone: "044-856-3304", diseasePhone: "044-856-3254", pensionOffice: "takatsu" },
-  tama: { label: "多摩区", disabilityPhone: "044-935-3302", diseasePhone: "044-935-3301", pensionOffice: "takatsu" },
-  asao: { label: "麻生区", disabilityPhone: "044-965-5159", diseasePhone: "044-965-5156", pensionOffice: "takatsu" },
+  kawasaki_ku: { label: "川崎区", disabilityPhone: "044-201-3215", diseasePhone: "044-201-3228", hepatitisPhone: "044-201-3204", pensionOffice: "kawasaki" },
+  saiwai: { label: "幸区", disabilityPhone: "044-556-6654", diseasePhone: "044-556-6643", hepatitisPhone: "044-556-6682", pensionOffice: "kawasaki" },
+  nakahara: { label: "中原区", disabilityPhone: "044-744-3296", diseasePhone: "044-744-3252", hepatitisPhone: "044-744-3280", pensionOffice: "takatsu" },
+  takatsu: { label: "高津区", disabilityPhone: "044-861-3252", diseasePhone: "044-861-3302", hepatitisPhone: "044-861-3321", pensionOffice: "takatsu" },
+  miyamae: { label: "宮前区", disabilityPhone: "044-856-3304", diseasePhone: "044-856-3254", hepatitisPhone: "044-856-3265", pensionOffice: "takatsu" },
+  tama: { label: "多摩区", disabilityPhone: "044-935-3302", diseasePhone: "044-935-3301", hepatitisPhone: "044-935-3310", pensionOffice: "takatsu" },
+  asao: { label: "麻生区", disabilityPhone: "044-965-5159", diseasePhone: "044-965-5156", hepatitisPhone: "044-965-5163", pensionOffice: "takatsu" },
 };
 
 export const WARD_OPTIONS = Object.entries(KAWASAKI_WARDS).map(([id, w]) => ({ id, label: w.label }));
 
 // 東京都は、聖マリアンナ医科大学病院に隣接する5市区のみ対応（それ以外は「それ以外」で汎用案内）。
-// 手続窓口・電話番号は「肝がん・重度肝硬変医療券の手続窓口一覧（令和8年版）」（東京都、令和8年4月）による。
+// 手続窓口・電話番号は「肝がん・重度肝硬変医療券の手続窓口一覧（令和8年版）」「難病・肝炎手続窓口
+// 一覧（令和8年4月）」（いずれも東京都）による。この5市区は指定難病・肝炎・肝がん重度肝硬変の
+// いずれも同一の障害福祉担当窓口が受け付けているため、officeName/phoneを共通で使う。
 export const TOKYO_MUNICIPALITIES = {
-  machida: { label: "町田市", cancerOfficeName: "町田市 地域福祉部障がい福祉課福祉係", cancerPhone: "042-724-2148" },
-  inagi: { label: "稲城市", cancerOfficeName: "稲城市 福祉部障害福祉課障害福祉係", cancerPhone: "042-378-2111", cancerPhoneNote: "内線224、226" },
-  tama: { label: "多摩市", cancerOfficeName: "多摩市 健康福祉部障害福祉課障害福祉係", cancerPhone: "042-338-6903" },
-  setagaya: { label: "世田谷区", cancerOfficeName: "世田谷区 世田谷総合支所 保健福祉センター 健康づくり課", cancerPhone: "03-5432-2893" },
-  komae: { label: "狛江市", cancerOfficeName: "狛江市 福祉保健部高齢障がい課障がい者支援係", cancerPhone: "03-3430-1111", cancerPhoneNote: "内線2208、2209、2221" },
+  machida: { label: "町田市", officeName: "町田市 地域福祉部障がい福祉課福祉係", phone: "042-724-2148" },
+  inagi: { label: "稲城市", officeName: "稲城市 福祉部障害福祉課障害福祉係", phone: "042-378-2111", phoneNote: "内線224、226" },
+  tama: { label: "多摩市", officeName: "多摩市 健康福祉部障害福祉課障害福祉係", phone: "042-338-6903" },
+  setagaya: { label: "世田谷区", officeName: "世田谷区 世田谷総合支所 保健福祉センター 健康づくり課", phone: "03-5432-2893" },
+  komae: { label: "狛江市", officeName: "狛江市 福祉保健部高齢障がい課障がい者支援係", phone: "03-3430-1111", phoneNote: "内線2208、2209、2221" },
 };
 
 export const TOKYO_MUNICIPALITY_OPTIONS = Object.entries(TOKYO_MUNICIPALITIES).map(([id, w]) => ({ id, label: w.label }));
@@ -154,6 +159,13 @@ export const PENSION_OFFICES = {
 export const KANAGAWA_DISEASE_CONTROL = {
   name: "神奈川県健康医療局 保健医療部 がん・疾病対策課 疾病対策グループ",
   phone: "045-210-1111",
+};
+
+// 肝炎医療費助成（肝炎治療受給者証）の相談専用窓口。出典: 神奈川県「肝炎治療受給者証の
+// 交付申請をされる方へ」（r8shinseiannai.pdf、2026年）。
+export const KANAGAWA_HEPATITIS_CONTACT = {
+  name: "神奈川県がん・疾病対策課 肝疾患担当",
+  phone: "045-210-4795",
 };
 
 export const MUNICIPALITIES = {
