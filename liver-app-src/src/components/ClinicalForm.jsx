@@ -3,11 +3,12 @@ import NumberField from "./form/NumberField";
 import SelectField from "./form/SelectField";
 import CheckFieldset from "./form/CheckFieldset";
 import MildExceptionFields from "./MildExceptionFields";
+import ResidenceFields from "./ResidenceFields";
 import {
   NUMBER_FIELDS,
   ASCITES_OPTIONS, ENCEPHALOPATHY_OPTIONS, GENERAL_STATUS_OPTIONS, LABOR_STATUS_OPTIONS,
   CHECK_GROUPS, ALP_RATIO_OPTIONS, LIVER_TRANSPLANT_OPTIONS,
-  SCREENING_OPTIONS, RESIDENCE_OPTIONS, WARD_OPTIONS, DESIGNATED_DISEASE_IDS,
+  SCREENING_OPTIONS, DESIGNATED_DISEASE_IDS,
   BC_VARIX_OPTIONS, BC_PORTAL_SIGN_OPTIONS, BC_ACTIVITY_OPTIONS,
 } from "../domain/constants";
 import { WILSON_MRS_OPTIONS } from "../domain/calculations";
@@ -144,25 +145,7 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
             <RadioGroup name="screening" options={SCREENING_OPTIONS} value={answers.screening} onChange={(v) => setAnswer("screening", v)} />
           </fieldset>
 
-          <fieldset className="clinical-group">
-            <legend>お住まい（窓口案内に使用します）</legend>
-            <RadioGroup
-              name="residence"
-              options={RESIDENCE_OPTIONS}
-              value={answers.residence}
-              onChange={(v) => {
-                setAnswer("residence", v);
-                if (v !== "kawasaki") setAnswer("ward", null);
-              }}
-            />
-          </fieldset>
-
-          {answers.residence === "kawasaki" && (
-            <fieldset className="clinical-group">
-              <legend>お住まいの区</legend>
-              <RadioGroup name="ward" options={WARD_OPTIONS} value={answers.ward} onChange={(v) => setAnswer("ward", v)} />
-            </fieldset>
-          )}
+          <ResidenceFields answers={answers} setAnswer={setAnswer} />
         </>
       )}
     </div>

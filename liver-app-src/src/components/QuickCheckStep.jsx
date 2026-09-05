@@ -1,7 +1,8 @@
 import CheckboxGroup from "./form/CheckboxGroup";
 import RadioGroup from "./form/RadioGroup";
 import IncomeEligibilityFields from "./IncomeEligibilityFields";
-import { TREATMENT_OPTIONS, SCREENING_OPTIONS, RESIDENCE_OPTIONS, WARD_OPTIONS } from "../domain/constants";
+import ResidenceFields, { residenceComplete } from "./ResidenceFields";
+import { TREATMENT_OPTIONS, SCREENING_OPTIONS } from "../domain/constants";
 
 // 血液検査値などの詳しい入力をしなくても判定できる「肝がん・重度肝硬変治療研究促進事業」
 // 「肝炎医療費助成」だけを先に確認したい場合の、検査値抜きの分岐画面。
@@ -15,7 +16,7 @@ export default function QuickCheckStep({
   const setAnswer = (key, val) => setAnswers((prev) => ({ ...prev, [key]: val }));
   const setClinicalField = (key, val) => setClinical((prev) => ({ ...prev, [key]: val }));
 
-  const canSubmit = answers.residence && (answers.residence !== "kawasaki" || answers.ward);
+  const canSubmit = residenceComplete(answers);
 
   return (
     <div className="disease-step">
@@ -49,31 +50,13 @@ export default function QuickCheckStep({
         </fieldset>
       )}
 
-      <fieldset className="clinical-group">
-        <legend>お住まい（窓口案内に使用します）</legend>
-        <RadioGroup
-          name="residence"
-          options={RESIDENCE_OPTIONS}
-          value={answers.residence}
-          onChange={(v) => {
-            setAnswer("residence", v);
-            if (v !== "kawasaki") setAnswer("ward", null);
-          }}
-        />
-      </fieldset>
-
-      {answers.residence === "kawasaki" && (
-        <fieldset className="clinical-group">
-          <legend>お住まいの区</legend>
-          <RadioGroup name="ward" options={WARD_OPTIONS} value={answers.ward} onChange={(v) => setAnswer("ward", v)} />
-        </fieldset>
-      )}
+      <ResidenceFields answers={answers} setAnswer={setAnswer} />
 
       <p className="qstep__title">続けて、指定難病・身体障害者手帳・障害年金の該当も判定しますか？</p>
       <p className="qstep__hint">血液検査値・一般状態区分など、追加の質問に答える必要があります。</p>
 
       {!canSubmit && (
-        <p className="qstep__error qstep__error--static">「お住まい」は必須項目です（川崎市の場合は区も）</p>
+        <p className="qstep__error qstep__error--static">「お住まい」は必須項目です（川崎市の場合は区、東京都の場合は市区も）</p>
       )}
 
       <div className="wizard__nav">

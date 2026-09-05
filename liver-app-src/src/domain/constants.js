@@ -116,7 +116,8 @@ export const SCREENING_OPTIONS = [
 export const RESIDENCE_OPTIONS = [
   { id: "kawasaki", label: "川崎市" },
   { id: "kanagawa_other", label: "神奈川県内（川崎市以外）" },
-  { id: "outside", label: "神奈川県外" },
+  { id: "tokyo", label: "東京都（町田市・稲城市・多摩市・世田谷区・狛江市）" },
+  { id: "outside", label: "それ以外" },
 ];
 
 // ---------- 自治体データ ----------
@@ -132,6 +133,18 @@ export const KAWASAKI_WARDS = {
 };
 
 export const WARD_OPTIONS = Object.entries(KAWASAKI_WARDS).map(([id, w]) => ({ id, label: w.label }));
+
+// 東京都は、聖マリアンナ医科大学病院に隣接する5市区のみ対応（それ以外は「それ以外」で汎用案内）。
+// 手続窓口・電話番号は「肝がん・重度肝硬変医療券の手続窓口一覧（令和8年版）」（東京都、令和8年4月）による。
+export const TOKYO_MUNICIPALITIES = {
+  machida: { label: "町田市", cancerOfficeName: "町田市 地域福祉部障がい福祉課福祉係", cancerPhone: "042-724-2148" },
+  inagi: { label: "稲城市", cancerOfficeName: "稲城市 福祉部障害福祉課障害福祉係", cancerPhone: "042-378-2111", cancerPhoneNote: "内線224、226" },
+  tama: { label: "多摩市", cancerOfficeName: "多摩市 健康福祉部障害福祉課障害福祉係", cancerPhone: "042-338-6903" },
+  setagaya: { label: "世田谷区", cancerOfficeName: "世田谷区 世田谷総合支所 保健福祉センター 健康づくり課", cancerPhone: "03-5432-2893" },
+  komae: { label: "狛江市", cancerOfficeName: "狛江市 福祉保健部高齢障がい課障がい者支援係", cancerPhone: "03-3430-1111", cancerPhoneNote: "内線2208、2209、2221" },
+};
+
+export const TOKYO_MUNICIPALITY_OPTIONS = Object.entries(TOKYO_MUNICIPALITIES).map(([id, w]) => ({ id, label: w.label }));
 
 export const PENSION_OFFICES = {
   kawasaki: { name: "川崎年金事務所", phone: "044-233-0181" },
@@ -164,8 +177,18 @@ export const MUNICIPALITIES = {
     screeningNote:
       "肝炎ウイルス検診の実施の有無・対象年齢は市区町村により異なります。お住まいの市区町村の健診担当課にご確認ください。",
   },
+  tokyo: {
+    label: "東京都",
+    offices: {
+      disabilityHandbook: "お住まいの区市町村 障害福祉担当課",
+      designatedDisease: "お住まいを管轄する保健所（特別区は区の保健所、市町村は東京都の保健所）",
+      hepatitisTest: "お住まいの区市町村の健診担当課、または保健所",
+    },
+    screeningNote:
+      "肝炎ウイルス検診の実施の有無・対象年齢は区市町村により異なります。お住まいの区市町村にご確認ください。",
+  },
   outside: {
-    label: "神奈川県外",
+    label: "それ以外",
     offices: {
       disabilityHandbook: "お住まいの市区町村 障害福祉担当課",
       designatedDisease: "お住まいを管轄する保健所（都道府県または政令指定都市・中核市）",
@@ -209,6 +232,7 @@ export const INITIAL_ANSWERS = {
   screening: null,
   residence: null,
   ward: null,
+  tokyoMunicipality: null,
   doctorSeverity: {},
 };
 

@@ -10,7 +10,7 @@
    最終判断は必ず指定医・専門医の診断によること。
    ========================================================== */
 
-import { KAWASAKI_WARDS, PENSION_OFFICES, KANAGAWA_DISEASE_CONTROL, MUNICIPALITIES } from "./constants";
+import { KAWASAKI_WARDS, PENSION_OFFICES, KANAGAWA_DISEASE_CONTROL, MUNICIPALITIES, TOKYO_MUNICIPALITIES } from "./constants";
 
 export function has(list, id) {
   return list.includes(id);
@@ -549,7 +549,7 @@ export const RULES = [
       return "B型・C型肝炎の診断があるとの回答から、治療を開始する場合に肝炎医療費助成の対象となる可能性があります。";
     },
     offices: (a) => {
-      if (a.residence === "outside") return [{ name: "お住まいの都道府県の担当窓口" }];
+      if (a.residence === "outside" || a.residence === "tokyo") return [{ name: "お住まいの都道府県の担当窓口" }];
       return [{
         ...KANAGAWA_DISEASE_CONTROL,
         note: a.residence === "kawasaki"
@@ -576,6 +576,11 @@ export const RULES = [
       return "「肝硬変（非代償期）」とB型またはC型肝炎の回答があるため、重度肝硬変として対象となる可能性があります（Child-Pugh分類による確認が必要です）。";
     },
     offices: (a) => {
+      if (a.residence === "tokyo") {
+        const m = TOKYO_MUNICIPALITIES[a.tokyoMunicipality];
+        if (m) return [{ name: m.cancerOfficeName, phone: m.cancerPhone, note: m.cancerPhoneNote }];
+        return [{ name: "お住まいの区市町村 障害福祉担当課" }];
+      }
       if (a.residence === "outside") return [{ name: "お住まいの都道府県の担当窓口" }];
       return [{
         ...KANAGAWA_DISEASE_CONTROL,

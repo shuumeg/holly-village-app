@@ -7,6 +7,7 @@ import CandidatePreviewStep from "./components/CandidatePreviewStep";
 import QuickCheckStep from "./components/QuickCheckStep";
 import ClinicalForm from "./components/ClinicalForm";
 import Results from "./components/Results";
+import { residenceComplete } from "./components/ResidenceFields";
 import { INITIAL_ANSWERS, INITIAL_CLINICAL, DESIGNATED_DISEASE_IDS } from "./domain/constants";
 import "./App.css";
 
@@ -25,10 +26,7 @@ export default function App() {
   const hasHepatitisVirus = answers.diagnosis.includes("hbv") || answers.diagnosis.includes("hcv");
   const cancerCirrhosisRelevant = answers.diagnosis.includes("liver_cancer") || answers.diagnosis.includes("cirrhosis_decompensated");
   const needsQuickCheck = hasHepatitisVirus || cancerCirrhosisRelevant;
-  const canSubmit =
-    (answers.screening || hasHepatitisVirus) &&
-    answers.residence &&
-    (answers.residence !== "kawasaki" || answers.ward);
+  const canSubmit = (answers.screening || hasHepatitisVirus) && residenceComplete(answers);
 
   const goTo = (next) => setStep(next);
 
@@ -147,7 +145,7 @@ export default function App() {
           <>
             <ClinicalForm answers={answers} setAnswers={setAnswers} clinical={clinical} setClinical={setClinical} />
             {!canSubmit && (
-              <p className="qstep__error qstep__error--static">「肝炎ウイルス検査の受診歴」「お住まい」は必須項目です（川崎市の場合は区も）</p>
+              <p className="qstep__error qstep__error--static">「肝炎ウイルス検査の受診歴」「お住まい」は必須項目です（川崎市の場合は区、東京都の場合は市区も）</p>
             )}
             <div className="wizard__nav">
               <button type="button" className="btn-secondary" onClick={() => goTo(needsQuickCheck ? "quickCheck" : "candidates")}>
