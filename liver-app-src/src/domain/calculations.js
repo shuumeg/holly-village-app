@@ -10,7 +10,7 @@
    最終判断は必ず指定医・専門医の診断によること。
    ========================================================== */
 
-import { KAWASAKI_WARDS, PENSION_OFFICES, KANAGAWA_DISEASE_CONTROL, KANAGAWA_HEPATITIS_CONTACT, MUNICIPALITIES, TOKYO_MUNICIPALITIES } from "./constants";
+import { KAWASAKI_WARDS, PENSION_OFFICES, KANAGAWA_DISEASE_CONTROL, KANAGAWA_HEPATITIS_CONTACT, KANAGAWA_OTHER_AREAS, MUNICIPALITIES, TOKYO_MUNICIPALITIES } from "./constants";
 
 export function has(list, id) {
   return list.includes(id);
@@ -562,6 +562,8 @@ export const RULES = [
           ...(w ? [{ label: "申請窓口", name: `${w.label}役所 地域みまもり支援センター（福祉事務所・保健所支所）衛生課`, phone: w.hepatitisPhone }] : []),
         ];
       }
+      const area = KANAGAWA_OTHER_AREAS[a.kanagawaArea];
+      if (area) return [{ label: "申請窓口", name: area.officeName, phone: area.phone, note: area.phoneNote }];
       return [{ ...KANAGAWA_HEPATITIS_CONTACT, note: "手続きは、お住まいを管轄する保健所でも行えます。" }];
     },
   },

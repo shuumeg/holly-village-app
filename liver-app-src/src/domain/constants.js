@@ -168,6 +168,34 @@ export const KANAGAWA_HEPATITIS_CONTACT = {
   phone: "045-210-4795",
 };
 
+// 「神奈川県内（川崎市以外）」のうち、横浜市18区・相模原市・藤沢市のみ肝炎医療費助成の
+// 実際の申請窓口（保健所等）に対応。それ以外の市区町村は選択肢の「その他」で汎用案内する。
+// 出典: 神奈川県「肝炎治療受給者証の交付申請をされる方へ」（r8shinseiannai.pdf、2026年）。
+export const KANAGAWA_OTHER_AREAS = {
+  yokohama_tsurumi: { label: "横浜市 鶴見区", officeName: "鶴見福祉保健センター（区役所）", phone: "045-510-1832" },
+  yokohama_kanagawa: { label: "横浜市 神奈川区", officeName: "神奈川福祉保健センター（区役所）", phone: "045-411-7138" },
+  yokohama_nishi: { label: "横浜市 西区", officeName: "西福祉保健センター（区役所）", phone: "045-320-8439" },
+  yokohama_naka: { label: "横浜市 中区", officeName: "中福祉保健センター（区役所）", phone: "045-224-8332" },
+  yokohama_minami: { label: "横浜市 南区", officeName: "南福祉保健センター（区役所）", phone: "045-341-1185" },
+  yokohama_konan: { label: "横浜市 港南区", officeName: "港南福祉保健センター（区役所）", phone: "045-847-8438" },
+  yokohama_hodogaya: { label: "横浜市 保土ケ谷区", officeName: "保土ケ谷福祉保健センター（区役所）", phone: "045-334-6344" },
+  yokohama_asahi: { label: "横浜市 旭区", officeName: "旭福祉保健センター（区役所）", phone: "045-954-6146" },
+  yokohama_isogo: { label: "横浜市 磯子区", officeName: "磯子福祉保健センター（区役所）", phone: "045-750-2445" },
+  yokohama_kanazawa: { label: "横浜市 金沢区", officeName: "金沢福祉保健センター（区役所）", phone: "045-788-7840" },
+  yokohama_kohoku: { label: "横浜市 港北区", officeName: "港北福祉保健センター（区役所）", phone: "045-540-2362" },
+  yokohama_midori: { label: "横浜市 緑区", officeName: "緑福祉保健センター（区役所）", phone: "045-930-2357" },
+  yokohama_aoba: { label: "横浜市 青葉区", officeName: "青葉福祉保健センター（区役所）", phone: "045-978-2438" },
+  yokohama_tsuzuki: { label: "横浜市 都筑区", officeName: "都筑福祉保健センター（区役所）", phone: "045-948-2350" },
+  yokohama_totsuka: { label: "横浜市 戸塚区", officeName: "戸塚福祉保健センター（区役所）", phone: "045-866-8426" },
+  yokohama_izumi: { label: "横浜市 泉区", officeName: "泉福祉保健センター（区役所）", phone: "045-800-2445" },
+  yokohama_sakae: { label: "横浜市 栄区", officeName: "栄福祉保健センター（区役所）", phone: "045-894-6964" },
+  yokohama_seya: { label: "横浜市 瀬谷区", officeName: "瀬谷福祉保健センター（区役所）", phone: "045-367-5744" },
+  sagamihara: { label: "相模原市", officeName: "相模原市保健所 疾病対策課（ウェルネスさがみはらB館4階）", phone: "042-769-7201", phoneNote: "書類受付のみ。区役所により受付窓口が異なる場合があります。" },
+  fujisawa: { label: "藤沢市", officeName: "藤沢市保健所", phone: "0466-50-3593" },
+};
+
+export const KANAGAWA_OTHER_AREA_OPTIONS = Object.entries(KANAGAWA_OTHER_AREAS).map(([id, a]) => ({ id, label: a.label }));
+
 export const MUNICIPALITIES = {
   kawasaki: {
     label: "川崎市",
@@ -245,6 +273,7 @@ export const INITIAL_ANSWERS = {
   residence: null,
   ward: null,
   tokyoMunicipality: null,
+  kanagawaArea: null,
   doctorSeverity: {},
 };
 

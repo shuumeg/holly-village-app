@@ -1,7 +1,10 @@
 import RadioGroup from "./form/RadioGroup";
-import { RESIDENCE_OPTIONS, WARD_OPTIONS, TOKYO_MUNICIPALITY_OPTIONS } from "../domain/constants";
+import SelectField from "./form/SelectField";
+import { RESIDENCE_OPTIONS, WARD_OPTIONS, TOKYO_MUNICIPALITY_OPTIONS, KANAGAWA_OTHER_AREA_OPTIONS } from "../domain/constants";
 
-// お住まい（窓口案内に使用）の入力欄。川崎市は区、東京都は対応市区まで選ぶと窓口を特定できる。
+// お住まい（窓口案内に使用）の入力欄。川崎市は区、東京都は対応市区まで選ぶと窓口を特定できる
+// （必須）。神奈川県内（川崎市以外）の横浜市・相模原市・藤沢市は任意選択（不明でも判定できる
+// よう、選ばなくても汎用案内にフォールバックする）。
 // QuickCheckStep・ResidenceOnlyStep・ClinicalFormの3箇所で使う。
 export function residenceComplete(answers) {
   if (!answers.residence) return false;
@@ -23,6 +26,7 @@ export default function ResidenceFields({ answers, setAnswer }) {
             setAnswer("residence", v);
             if (v !== "kawasaki") setAnswer("ward", null);
             if (v !== "tokyo") setAnswer("tokyoMunicipality", null);
+            if (v !== "kanagawa_other") setAnswer("kanagawaArea", null);
           }}
         />
       </fieldset>
@@ -42,6 +46,19 @@ export default function ResidenceFields({ answers, setAnswer }) {
             options={TOKYO_MUNICIPALITY_OPTIONS}
             value={answers.tokyoMunicipality}
             onChange={(v) => setAnswer("tokyoMunicipality", v)}
+          />
+        </fieldset>
+      )}
+
+      {answers.residence === "kanagawa_other" && (
+        <fieldset className="clinical-group">
+          <legend>お住まいの市区町村（横浜市・相模原市・藤沢市の場合、窓口の特定に使用）</legend>
+          <SelectField
+            label="市区町村"
+            options={KANAGAWA_OTHER_AREA_OPTIONS}
+            value={answers.kanagawaArea}
+            onChange={(v) => setAnswer("kanagawaArea", v)}
+            defaultLabel="わからない／その他の市区町村"
           />
         </fieldset>
       )}
