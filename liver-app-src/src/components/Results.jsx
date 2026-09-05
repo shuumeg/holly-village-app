@@ -42,12 +42,14 @@ export default function Results({ answers, clinical, setClinical }) {
   const cancerMatched = cancerCauseMatched && cancerIncomeEligible === true;
   const EXTRACTED_RULE_IDS = ["hepatitis_subsidy", "cancer_cirrhosis"];
 
+  // 肝がん・重度肝硬変は手帳・年金より確認頻度が高いため、同じ信号色（特に情報不足の黄）が並んだ際に
+  // 手帳・年金より先に表示されるよう配列の先頭に置く（信号色ごとのグループ内での並び順に反映される）。
   const trafficItems = [
+    ...(cancerCirrhosisRelevant ? [{ key: "cancer_cirrhosis", name: "肝がん・重度肝硬変治療研究促進事業", light: ruleTrafficLight(cancerMatched, cancerInsufficient) }] : []),
     { key: "handbook", name: "身体障害者手帳（肝臓機能障害）", light: handbookTrafficLight(hb) },
     { key: "pension", name: "障害年金（肝疾患）", light: pensionTrafficLight(pension) },
     ...diseases.map((d) => ({ key: `disease-${d.id}`, name: `指定難病（${d.disease}）`, light: diseaseTrafficLight(d) })),
     ...(hasVirus ? [{ key: "hepatitis_subsidy", name: "肝炎医療費助成", light: ruleTrafficLight(subsidyMatched) }] : []),
-    ...(cancerCirrhosisRelevant ? [{ key: "cancer_cirrhosis", name: "肝がん・重度肝硬変治療研究促進事業", light: ruleTrafficLight(cancerMatched, cancerInsufficient) }] : []),
   ];
 
   const matched = RULES.filter((rule) => !EXTRACTED_RULE_IDS.includes(rule.id) && rule.match(answers));
@@ -98,6 +100,28 @@ export default function Results({ answers, clinical, setClinical }) {
 
       <h3 className="results-subheading">くわしい判定結果</h3>
       {[
+        // 肝がん・重度肝硬変は手帳・年金より確認頻度が高いため、同じ判定状態が並んだ際に
+        // 手帳・年金より先に表示されるよう配列の先頭に置く（下のsortで状態ごとにグループ化される）。
+        ...(cancerCirrhosisRelevant ? [{
+          key: "cancer_cirrhosis",
+          name: cancerRule.name,
+          status: cancerInsufficient ? "情報不足" : cancerMatched ? "対象の可能性" : "現時点では対象外",
+          statusClass: cancerInsufficient ? "status-unknown" : cancerMatched ? "status-yes" : "status-no",
+          body: cancerInsufficient
+            ? `${cancerRule.reason(answers)}<br>所得要件（年収目安約370万円以下）の確認に必要な年齢・所得区分（自己負担割合）が未入力のため、対象可否を判定できません。`
+            : cancerMatched
+            ? `${cancerRule.reason(answers)}<br><span class="result-card__criteria">${cancerRule.summary}</span>`
+            : cancerCauseMatched
+            ? `${cancerRule.reason(answers)}<br>所得区分（年収目安約370万円超）から、現時点では所得要件を満たさない可能性があります。`
+            : "B型・C型肝炎ウイルスの感染の合併が確認できないため、現時点では対象外です。",
+          offices: cancerRule.offices(answers),
+          children: cancerCauseMatched && (
+            <div className="result-card__inline-form">
+              <p className="qstep__hint">所得区分を入力・変更すると、この場で判定し直せます。</p>
+              <IncomeEligibilityFields clinical={clinical} setClinicalField={setClinicalField} />
+            </div>
+          ),
+        }] : []),
         {
           key: "handbook",
           name: "身体障害者手帳（肝臓機能障害）",
@@ -131,26 +155,6 @@ export default function Results({ answers, clinical, setClinical }) {
             ? `${subsidyRule.reason(answers)}<br><span class="result-card__criteria">${subsidyRule.summary}</span>`
             : "「治療済み（治療は終了）」との回答のため、現時点では対象外です。",
           offices: subsidyRule.offices(answers),
-        }] : []),
-        ...(cancerCirrhosisRelevant ? [{
-          key: "cancer_cirrhosis",
-          name: cancerRule.name,
-          status: cancerInsufficient ? "情報不足" : cancerMatched ? "対象の可能性" : "現時点では対象外",
-          statusClass: cancerInsufficient ? "status-unknown" : cancerMatched ? "status-yes" : "status-no",
-          body: cancerInsufficient
-            ? `${cancerRule.reason(answers)}<br>所得要件（年収目安約370万円以下）の確認に必要な年齢・所得区分（自己負担割合）が未入力のため、対象可否を判定できません。`
-            : cancerMatched
-            ? `${cancerRule.reason(answers)}<br><span class="result-card__criteria">${cancerRule.summary}</span>`
-            : cancerCauseMatched
-            ? `${cancerRule.reason(answers)}<br>所得区分（年収目安約370万円超）から、現時点では所得要件を満たさない可能性があります。`
-            : "B型・C型肝炎ウイルスの感染の合併が確認できないため、現時点では対象外です。",
-          offices: cancerRule.offices(answers),
-          children: cancerCauseMatched && (
-            <div className="result-card__inline-form">
-              <p className="qstep__hint">所得区分を入力・変更すると、この場で判定し直せます。</p>
-              <IncomeEligibilityFields clinical={clinical} setClinicalField={setClinicalField} />
-            </div>
-          ),
         }] : []),
       ]
         .sort((a, b) => STATUS_ORDER[a.statusClass] - STATUS_ORDER[b.statusClass])
