@@ -4,13 +4,13 @@ import NumberField from "./form/NumberField";
 import SelectField from "./form/SelectField";
 import CheckFieldset from "./form/CheckFieldset";
 import MildExceptionFields from "./MildExceptionFields";
+import IncomeEligibilityFields from "./IncomeEligibilityFields";
 import {
   TREATMENT_OPTIONS, NUMBER_FIELDS,
   ASCITES_OPTIONS, ENCEPHALOPATHY_OPTIONS, GENERAL_STATUS_OPTIONS, LABOR_STATUS_OPTIONS,
   CHECK_GROUPS, ALP_RATIO_OPTIONS, LIVER_TRANSPLANT_OPTIONS,
   SCREENING_OPTIONS, RESIDENCE_OPTIONS, WARD_OPTIONS, DESIGNATED_DISEASE_IDS,
   BC_VARIX_OPTIONS, BC_PORTAL_SIGN_OPTIONS, BC_ACTIVITY_OPTIONS,
-  AGE_GROUP_OPTIONS, INCOME_TIER_UNDER70_OPTIONS, COPAY_RATIO_70PLUS_OPTIONS,
 } from "../domain/constants";
 import { WILSON_MRS_OPTIONS } from "../domain/calculations";
 
@@ -143,23 +143,7 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
           <p className="qstep__hint">
             この事業には所得要件（年収目安約370万円以下）があります。ご自身の高額療養費の所得区分（限度額適用認定証・保険証で確認できます）を選んでください。
           </p>
-          <SelectField label="年齢" options={AGE_GROUP_OPTIONS} value={clinical.ageGroup} onChange={(v) => setClinicalField("ageGroup", v)} />
-          {clinical.ageGroup === "under70" && (
-            <SelectField
-              label="高額療養費の所得区分（限度額適用認定証で確認）"
-              options={INCOME_TIER_UNDER70_OPTIONS}
-              value={clinical.incomeTierUnder70}
-              onChange={(v) => setClinicalField("incomeTierUnder70", v)}
-            />
-          )}
-          {clinical.ageGroup === "over70" && (
-            <SelectField
-              label="自己負担割合（保険証・高齢受給者証で確認）"
-              options={COPAY_RATIO_70PLUS_OPTIONS}
-              value={clinical.copayRatio70Plus}
-              onChange={(v) => setClinicalField("copayRatio70Plus", v)}
-            />
-          )}
+          <IncomeEligibilityFields clinical={clinical} setClinicalField={setClinicalField} />
         </fieldset>
       )}
 

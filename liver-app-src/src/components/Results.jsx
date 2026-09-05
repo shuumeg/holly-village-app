@@ -9,6 +9,7 @@ import { GRADE_LABEL, GENERAL_STATUS_OPTIONS } from "../domain/constants";
 import TrafficLightSummary from "./TrafficLightSummary";
 import PreciseCard from "./PreciseCard";
 import RuleCard from "./RuleCard";
+import IncomeEligibilityFields from "./IncomeEligibilityFields";
 
 function generalStatusShort(id) {
   return GENERAL_STATUS_OPTIONS.find((o) => o.id === id)?.label.slice(0, 1) ?? "未回答";
@@ -17,7 +18,8 @@ function generalStatusShort(id) {
 // 「くわしい判定結果」もサマリーと同じく、対象の可能性が高いもの（緑）から順に並べる
 const STATUS_ORDER = { "status-yes": 0, "status-unknown": 1, "status-no": 2 };
 
-export default function Results({ answers, clinical }) {
+export default function Results({ answers, clinical, setClinical }) {
+  const setClinicalField = (key, val) => setClinical((prev) => ({ ...prev, [key]: val }));
   const c = useMemo(() => ({ ...clinical, currentHbvHcv: currentHbvHcv(answers) }), [clinical, answers]);
 
   const hb = useMemo(() => calcHandbookGrade(c), [c]);
@@ -143,6 +145,12 @@ export default function Results({ answers, clinical }) {
             ? `${cancerRule.reason(answers)}<br>所得区分（年収目安約370万円超）から、現時点では所得要件を満たさない可能性があります。`
             : "B型・C型肝炎ウイルスの感染の合併が確認できないため、現時点では対象外です。",
           offices: cancerRule.offices(answers),
+          children: cancerCauseMatched && (
+            <div className="result-card__inline-form">
+              <p className="qstep__hint">所得区分を入力・変更すると、この場で判定し直せます。</p>
+              <IncomeEligibilityFields clinical={clinical} setClinicalField={setClinicalField} />
+            </div>
+          ),
         }] : []),
       ]
         .sort((a, b) => STATUS_ORDER[a.statusClass] - STATUS_ORDER[b.statusClass])

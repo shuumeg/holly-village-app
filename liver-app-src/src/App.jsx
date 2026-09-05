@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DiseaseNameStep from "./components/DiseaseNameStep";
 import HepatitisCoInfectionStep from "./components/HepatitisCoInfectionStep";
 import SeverityConfirmStep from "./components/SeverityConfirmStep";
@@ -24,10 +24,14 @@ export default function App() {
     answers.residence &&
     (answers.residence !== "kawasaki" || answers.ward);
 
-  const goTo = (next) => {
-    setStep(next);
+  const goTo = (next) => setStep(next);
+
+  // 画面が切り替わった直後（新しい内容の高さが確定した後）にスクロールする。
+  // setStepと同じタイミングでscrollToを呼ぶと、切り替え前の（長さの違う）画面を
+  // 基準にスクロールしてしまい、特に描画の遅い端末で意図しない位置に着地していた。
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  }, [step]);
 
   const afterNameOrHepatitis = (diagnosisId) => {
     goTo(DESIGNATED_DISEASE_IDS.includes(diagnosisId) ? "severity" : "candidates");
@@ -131,7 +135,7 @@ export default function App() {
 
         {step === "results" && (
           <>
-            <Results answers={answers} clinical={clinical} />
+            <Results answers={answers} clinical={clinical} setClinical={setClinical} />
             <div className="wizard__nav">
               <button type="button" className="btn-secondary" onClick={() => goTo("clinical")}>
                 ← 入力内容を確認・修正する
