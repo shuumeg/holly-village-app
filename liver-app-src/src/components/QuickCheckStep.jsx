@@ -77,11 +77,11 @@ export default function QuickCheckStep({
       )}
 
       <div className="wizard__nav">
-        <button type="button" className="btn-secondary" disabled={!canSubmit} onClick={onQuickResults}>
-          いいえ、この結果だけ確認する
-        </button>
-        <button type="button" className="btn-primary" disabled={!canSubmit} onClick={onContinueFull}>
+        <button type="button" className="btn-secondary" disabled={!canSubmit} onClick={onContinueFull}>
           はい、続けて判定する
+        </button>
+        <button type="button" className="btn-primary" disabled={!canSubmit} onClick={onQuickResults}>
+          いいえ、この結果だけ確認する
         </button>
       </div>
 
