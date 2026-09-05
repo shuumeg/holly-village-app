@@ -1,12 +1,10 @@
-import CheckboxGroup from "./form/CheckboxGroup";
 import RadioGroup from "./form/RadioGroup";
 import NumberField from "./form/NumberField";
 import SelectField from "./form/SelectField";
 import CheckFieldset from "./form/CheckFieldset";
 import MildExceptionFields from "./MildExceptionFields";
-import IncomeEligibilityFields from "./IncomeEligibilityFields";
 import {
-  TREATMENT_OPTIONS, NUMBER_FIELDS,
+  NUMBER_FIELDS,
   ASCITES_OPTIONS, ENCEPHALOPATHY_OPTIONS, GENERAL_STATUS_OPTIONS, LABOR_STATUS_OPTIONS,
   CHECK_GROUPS, ALP_RATIO_OPTIONS, LIVER_TRANSPLANT_OPTIONS,
   SCREENING_OPTIONS, RESIDENCE_OPTIONS, WARD_OPTIONS, DESIGNATED_DISEASE_IDS,
@@ -14,6 +12,8 @@ import {
 } from "../domain/constants";
 import { WILSON_MRS_OPTIONS } from "../domain/calculations";
 
+// 治療の状況・所得区分・受診歴・お住まいは、該当する場合はQuickCheckStepで先に確認済みのため、
+// その場合はここでは重複して表示しない（needsQuickCheckがtrueの間はApp.jsxが必ずQuickCheckStepを経由させる）。
 export default function ClinicalForm({ answers, setAnswers, clinical, setClinical }) {
   const setAnswer = (key, val) => setAnswers((prev) => ({ ...prev, [key]: val }));
   const setClinicalField = (key, val) => setClinical((prev) => ({ ...prev, [key]: val }));
@@ -24,21 +24,10 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
   const hasPortalHypertensionDisease = answers.diagnosis.includes("budd_chiari") || answers.diagnosis.includes("portal_hypertension");
   const hasWilson = answers.diagnosis.includes("wilson");
   const cancerCirrhosisRelevant = answers.diagnosis.includes("liver_cancer") || answers.diagnosis.includes("cirrhosis_decompensated");
+  const needsQuickCheck = hasHepatitisVirus || cancerCirrhosisRelevant;
 
   return (
     <div className="clinical-form">
-      {hasHepatitisVirus && (
-        <fieldset className="clinical-group">
-          <legend>治療の状況</legend>
-          <p className="qstep__hint">現在の治療状況を選んでください（複数選択可）</p>
-          <CheckboxGroup
-            options={TREATMENT_OPTIONS}
-            value={answers.treatment}
-            onChange={(v) => setAnswer("treatment", v)}
-          />
-        </fieldset>
-      )}
-
       <fieldset className="clinical-group">
         <legend>血液検査値</legend>
         <div className="clinical-fields">
@@ -137,16 +126,6 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
         </fieldset>
       )}
 
-      {cancerCirrhosisRelevant && (
-        <fieldset className="clinical-group">
-          <legend>所得区分（肝がん・重度肝硬変治療研究促進事業の所得要件の判定に使用）</legend>
-          <p className="qstep__hint">
-            この事業には所得要件（年収目安約370万円以下）があります。ご自身の高額療養費の所得区分（限度額適用認定証・保険証で確認できます）を選んでください。
-          </p>
-          <IncomeEligibilityFields clinical={clinical} setClinicalField={setClinicalField} />
-        </fieldset>
-      )}
-
       <fieldset className="clinical-group">
         <legend>肝臓移植</legend>
         <SelectField
@@ -158,31 +137,33 @@ export default function ClinicalForm({ answers, setAnswers, clinical, setClinica
         />
       </fieldset>
 
-      {!hasHepatitisVirus && (
-        <fieldset className="clinical-group">
-          <legend>肝炎ウイルス検査の受診歴</legend>
-          <RadioGroup name="screening" options={SCREENING_OPTIONS} value={answers.screening} onChange={(v) => setAnswer("screening", v)} />
-        </fieldset>
-      )}
+      {!needsQuickCheck && (
+        <>
+          <fieldset className="clinical-group">
+            <legend>肝炎ウイルス検査の受診歴</legend>
+            <RadioGroup name="screening" options={SCREENING_OPTIONS} value={answers.screening} onChange={(v) => setAnswer("screening", v)} />
+          </fieldset>
 
-      <fieldset className="clinical-group">
-        <legend>お住まい（窓口案内に使用します）</legend>
-        <RadioGroup
-          name="residence"
-          options={RESIDENCE_OPTIONS}
-          value={answers.residence}
-          onChange={(v) => {
-            setAnswer("residence", v);
-            if (v !== "kawasaki") setAnswer("ward", null);
-          }}
-        />
-      </fieldset>
+          <fieldset className="clinical-group">
+            <legend>お住まい（窓口案内に使用します）</legend>
+            <RadioGroup
+              name="residence"
+              options={RESIDENCE_OPTIONS}
+              value={answers.residence}
+              onChange={(v) => {
+                setAnswer("residence", v);
+                if (v !== "kawasaki") setAnswer("ward", null);
+              }}
+            />
+          </fieldset>
 
-      {answers.residence === "kawasaki" && (
-        <fieldset className="clinical-group">
-          <legend>お住まいの区</legend>
-          <RadioGroup name="ward" options={WARD_OPTIONS} value={answers.ward} onChange={(v) => setAnswer("ward", v)} />
-        </fieldset>
+          {answers.residence === "kawasaki" && (
+            <fieldset className="clinical-group">
+              <legend>お住まいの区</legend>
+              <RadioGroup name="ward" options={WARD_OPTIONS} value={answers.ward} onChange={(v) => setAnswer("ward", v)} />
+            </fieldset>
+          )}
+        </>
       )}
     </div>
   );

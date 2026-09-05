@@ -4,6 +4,7 @@ import HepatitisCoInfectionStep from "./components/HepatitisCoInfectionStep";
 import SeverityConfirmStep from "./components/SeverityConfirmStep";
 import ResidenceOnlyStep from "./components/ResidenceOnlyStep";
 import CandidatePreviewStep from "./components/CandidatePreviewStep";
+import QuickCheckStep from "./components/QuickCheckStep";
 import ClinicalForm from "./components/ClinicalForm";
 import Results from "./components/Results";
 import { INITIAL_ANSWERS, INITIAL_CLINICAL, DESIGNATED_DISEASE_IDS } from "./domain/constants";
@@ -14,11 +15,16 @@ import "./App.css";
 const NEEDS_HEPATITIS_CHECK = ["cirrhosis_compensated", "cirrhosis_decompensated", "liver_cancer"];
 
 export default function App() {
-  const [step, setStep] = useState("name"); // "name" | "hepatitis" | "severity" | "residenceOnly" | "candidates" | "clinical" | "results"
+  const [step, setStep] = useState("name"); // "name" | "hepatitis" | "severity" | "residenceOnly" | "candidates" | "quickCheck" | "clinical" | "results"
   const [answers, setAnswers] = useState(INITIAL_ANSWERS);
   const [clinical, setClinical] = useState(INITIAL_CLINICAL);
+  // resultsに「検査値なしの簡易確認」経由で来た場合、結果画面の「戻る」をクリニカルフォームではなく
+  // quickCheckに戻すためのフラグ（クリニカルフォームは一度も入力していないため）。
+  const [quickResultsOnly, setQuickResultsOnly] = useState(false);
 
   const hasHepatitisVirus = answers.diagnosis.includes("hbv") || answers.diagnosis.includes("hcv");
+  const cancerCirrhosisRelevant = answers.diagnosis.includes("liver_cancer") || answers.diagnosis.includes("cirrhosis_decompensated");
+  const needsQuickCheck = hasHepatitisVirus || cancerCirrhosisRelevant;
   const canSubmit =
     (answers.screening || hasHepatitisVirus) &&
     answers.residence &&
@@ -65,6 +71,7 @@ export default function App() {
   const handleReset = () => {
     setAnswers(INITIAL_ANSWERS);
     setClinical(INITIAL_CLINICAL);
+    setQuickResultsOnly(false);
     goTo("name");
   };
 
@@ -111,8 +118,28 @@ export default function App() {
           <CandidatePreviewStep
             diagnosisIds={answers.diagnosis}
             diagnosisLabel={answers.diagnosisLabel}
-            onNext={() => goTo("clinical")}
+            onNext={() => goTo(needsQuickCheck ? "quickCheck" : "clinical")}
             onBack={handleBackFromCandidates}
+          />
+        )}
+
+        {step === "quickCheck" && (
+          <QuickCheckStep
+            answers={answers}
+            setAnswers={setAnswers}
+            clinical={clinical}
+            setClinical={setClinical}
+            hasHepatitisVirus={hasHepatitisVirus}
+            cancerCirrhosisRelevant={cancerCirrhosisRelevant}
+            onContinueFull={() => {
+              setQuickResultsOnly(false);
+              goTo("clinical");
+            }}
+            onQuickResults={() => {
+              setQuickResultsOnly(true);
+              goTo("results");
+            }}
+            onBack={() => goTo("candidates")}
           />
         )}
 
@@ -123,7 +150,7 @@ export default function App() {
               <p className="qstep__error qstep__error--static">「肝炎ウイルス検査の受診歴」「お住まい」は必須項目です（川崎市の場合は区も）</p>
             )}
             <div className="wizard__nav">
-              <button type="button" className="btn-secondary" onClick={() => goTo("candidates")}>
+              <button type="button" className="btn-secondary" onClick={() => goTo(needsQuickCheck ? "quickCheck" : "candidates")}>
                 ← 戻る
               </button>
               <button type="button" className="btn-primary" disabled={!canSubmit} onClick={() => goTo("results")}>
@@ -137,7 +164,7 @@ export default function App() {
           <>
             <Results answers={answers} clinical={clinical} setClinical={setClinical} />
             <div className="wizard__nav">
-              <button type="button" className="btn-secondary" onClick={() => goTo("clinical")}>
+              <button type="button" className="btn-secondary" onClick={() => goTo(quickResultsOnly ? "quickCheck" : "clinical")}>
                 ← 入力内容を確認・修正する
               </button>
               <button type="button" className="btn-secondary" onClick={handleReset}>
