@@ -36,16 +36,27 @@ function normalizeText(str) {
     .trim();
 }
 
-// 文字が漢字・ひらがな・カタカナ（＝単語の続きとみなせる文字）かどうか判定
-// undefined（文字列の末尾）の場合は続きではないので false を返す
-function isKanjiOrKana(ch) {
-  if (!ch) return false;
-  return /[぀-ヿ㐀-鿿豈-﫿]/.test(ch);
+// 「ヶ」「ケ」「ヵ」「が」の表記ゆれを吸収する（例：「梶ヶ谷」と「梶ケ谷」を同じとみなす）
+// 入力側・データ側の両方にかけてから比較する。
+function normalizeKe(str) {
+  return str.replace(/[ヶヵが]/g, "ケ");
 }
 
-// 「1・3丁目」「2〜7丁目」「3丁目」等の丁目表記を除去（町名だけを取り出す）
+// 「1・3丁目」「2〜7丁目」「1丁目～5丁目」「一～三丁目」「1〜3・5丁目」「3丁目」等の
+// 丁目表記を除去（町名だけを取り出す）
+const CHOME_NUM = "[0-9一二三四五六七八九十]+";
+const CHOME_PATTERN = new RegExp(
+  `${CHOME_NUM}(?:丁目)?(?:[・、,〜~～-]${CHOME_NUM}(?:丁目)?)*丁目`,
+  "g"
+);
 function stripChome(str) {
-  return str.replace(/[0-9]+(?:[・、,][0-9]+)*(?:[〜~-][0-9]+)?丁目/g, "");
+  return str.replace(CHOME_PATTERN, "");
+}
+
+// 入力された住所の町名部分から、番地・号以降を取り除く（例："南野川1-8-11" → "南野川"）
+// ※漢数字の番地は取り除かない。「一番町」「麻布十番」のように町名自体に含まれるため。
+function stripBanchi(str) {
+  return str.replace(/[0-9].*$/, "");
 }
 
 // "川崎市多摩区" のような市区町村名から、"多摩区" のような区だけの別名も作る
@@ -61,7 +72,7 @@ function getCityAliases(city) {
 // ---------- 検索ロジック ----------
 
 async function searchCenters(rawQuery) {
-  const query = normalizeText(rawQuery);
+  const query = normalizeKe(normalizeText(rawQuery));
   if (!query) return { data: [], error: null };
 
   if (isZipLikeQuery(query)) {
@@ -94,29 +105,24 @@ async function searchCenters(rawQuery) {
   if (error) return { data: null, error };
 
   // センターごとに一致の強さを判定する。
-  // "exact"：住所そのものに一致／市区町村名のみの入力／担当地区の町名と完全に一致
+  // "exact"：市区町村名のみの入力／担当地区の町名と完全に一致
   // "prefix"：担当地区の町名が入力を前方一致で含む（丁目除去の残骸などを拾うための保険）
   // 同じ入力で"exact"が1件でもあれば、"prefix"だけの結果は除外する。
   // （例：大和市「中央」で検索したとき、前方一致だけだと無関係な「中央林間」まで
   //   ヒットしてしまうが、"中央"自体が完全一致するセンターがあるならそちらだけを返す）
+  // ※センター自身の所在地（住所）との一致は判定に使わない。所在地の町を担当して
+  //   いないセンターがあるため（例：宮前区南野川にある富士見プラザの担当は有馬・東有馬）。
   function matchType(center) {
-    // 住所そのものへの一致は、一致した直後が漢字・かな（＝別の単語の続き）でない
-    // 場合のみ採用する。例："大和市中央"は「大和市中央林間」にも部分一致してしまう
-    // が、一致直後が「林」（漢字）なので誤ヒットとして除外する。
-    const addressIdx = center.address.indexOf(query);
-    if (addressIdx !== -1 && !isKanjiOrKana(center.address[addressIdx + query.length])) {
-      return "exact";
-    }
-
     // "東京都町田市"のように先頭に都道府県名がついている場合は取り除く
     // （都道府県名から入力するユーザーにも対応するため）。
-    const queryWithoutPrefecture = query.startsWith(center.prefecture)
-      ? query.slice(center.prefecture.length)
+    const prefecture = normalizeKe(center.prefecture);
+    const queryWithoutPrefecture = query.startsWith(prefecture)
+      ? query.slice(prefecture.length)
       : query;
 
     // "川崎市多摩区"だけでなく"多摩区"のように市名を省略した入力にも対応する。
     // 一致する別名のうち最も長いものを、市区町村名部分とみなして取り除く。
-    const aliases = getCityAliases(center.city);
+    const aliases = getCityAliases(normalizeKe(center.city));
     const prefixAlias = aliases
       .filter((a) => queryWithoutPrefecture.startsWith(a))
       .sort((a, b) => b.length - a.length)[0];
@@ -125,16 +131,16 @@ async function searchCenters(rawQuery) {
     if (prefixAlias !== undefined) {
       const rest = queryWithoutPrefecture.slice(prefixAlias.length);
       if (rest === "") return "exact"; // クエリが市区町村名（の別名）のみ
-      remainderTown = stripChome(rest);
+      remainderTown = stripBanchi(stripChome(rest));
     } else if (aliases.some((a) => a.includes(queryWithoutPrefecture))) {
       return "exact"; // クエリが市区町村名の一部（例："多摩"）
     } else {
-      remainderTown = stripChome(queryWithoutPrefecture);
+      remainderTown = stripBanchi(stripChome(queryWithoutPrefecture));
     }
 
     if (remainderTown === "") return null;
 
-    const towns = stripChome(center.area || "")
+    const towns = stripChome(normalizeKe(center.area || ""))
       .split(/[・、,]/)
       .map((t) => t.replace(/[（(].*?[）)]/g, "").replace(/の一部$/, "").trim())
       .filter(Boolean);
