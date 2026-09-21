@@ -85,6 +85,13 @@ const UNASSIGNED_AREAS = [
     phone: "042-514-8495",
   },
   {
+    prefecture: "東京都",
+    city: "江戸川区",
+    towns: [{ name: "東篠崎町", zip: "1330062" }],
+    office: "江戸川区 福祉部 介護保険課 事業者調整係",
+    phone: "03-5662-0032",
+  },
+  {
     prefecture: "神奈川県",
     city: "平塚市",
     towns: [
@@ -102,6 +109,13 @@ const UNASSIGNED_AREAS = [
     office: "相模原市 中央高齢・障害者相談課（高齢福祉班）",
     phone: "042-769-8349",
   },
+  {
+    prefecture: "神奈川県",
+    city: "川崎市中原区",
+    towns: [{ name: "小杉", zip: "2110061" }],
+    office: "中原区役所 地域みまもり支援センター 高齢・障害課",
+    phone: "044-744-3217",
+  },
 ];
 const UNASSIGNED_CONFIRMED_ON = "2026-09-21";
 
@@ -114,7 +128,7 @@ function findUnassignedArea(rawQuery) {
     const digits = digitsOnly(query);
     if (digits.length !== 7) return [];
     return UNASSIGNED_AREAS.flatMap((area) =>
-      area.towns.filter((t) => t.zip === digits).map((t) => ({ area, town: t }))
+      area.towns.filter((t) => t.zip === digits).map((t) => ({ area, town: t, explicit: true }))
     );
   }
 
@@ -127,7 +141,9 @@ function findUnassignedArea(rawQuery) {
       .sort((a, b) => b.length - a.length)[0];
     const town = stripBanchi(stripChome(alias !== undefined ? q.slice(alias.length) : q));
     for (const t of area.towns) {
-      if (town === normalizeKe(t.name)) hits.push({ area, town: t });
+      if (town === normalizeKe(t.name)) {
+        hits.push({ area, town: t, explicit: alias !== undefined });
+      }
     }
   }
   return hits;
@@ -220,9 +236,13 @@ async function searchCenters(rawQuery) {
 
   const types = new Map(data.map((center) => [center.id, matchType(center)]));
   const exactMatches = data.filter((center) => types.get(center.id) === "exact");
+  // 担当不明の町そのものが市区名つきで入力された場合は、前方一致の結果は出さない
+  // （例：「中原区小杉」で、担当外の「小杉町」「小杉陣屋町」のセンターを出さないため）
   const matched = exactMatches.length > 0
     ? exactMatches
-    : data.filter((center) => types.get(center.id) === "prefix");
+    : findUnassignedArea(rawQuery).some((hit) => hit.explicit)
+      ? []
+      : data.filter((center) => types.get(center.id) === "prefix");
 
   matched.sort((a, b) => a.prefecture.localeCompare(b.prefecture, "ja"));
   return { data: matched, error: null };
@@ -327,7 +347,7 @@ function createNoticeCard({ area, town }) {
   card.innerHTML = `
     <span class="center-card__zip">${formatZip(town.zip)}</span>
     <h2 class="center-card__name">${escapeHtml(area.city)} ${escapeHtml(town.name)}</h2>
-    <p class="center-card__notice-text">この地域を担当する地域包括支援センターは、${escapeHtml(area.city.replace(/(市).+区$/, "$1"))}の公式資料では確認できませんでした。お手数ですが、下記の市役所の担当課にお問い合わせください。</p>
+    <p class="center-card__notice-text">この地域を担当する地域包括支援センターは、${escapeHtml(area.city.replace(/(市).+区$/, "$1"))}の公式資料では確認できませんでした。お手数ですが、下記の担当窓口にお問い合わせください。</p>
     <p class="center-card__row">
       <span class="center-card__icon" aria-hidden="true">🏛️</span>
       <span>${escapeHtml(area.office)}</span>
