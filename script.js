@@ -69,6 +69,70 @@ function getCityAliases(city) {
   return aliases;
 }
 
+// ---------- 担当センターが公式資料で確認できない町 ----------
+// 自治体の公式資料（担当地区一覧）にどのセンターの担当としても記載がない町。
+// 推測でセンターを割り当てると誤案内になるため、検索されたら自治体の担当課を案内する。
+// 電話番号は各自治体の地域包括支援センター案内ページ等で確認したもの（2026年9月21日時点）。
+const UNASSIGNED_AREAS = [
+  {
+    prefecture: "東京都",
+    city: "日野市",
+    towns: [
+      { name: "さくら町", zip: "1910063" },
+      { name: "下田", zip: "1910023" },
+    ],
+    office: "日野市 健康福祉部 高齢福祉課",
+    phone: "042-514-8495",
+  },
+  {
+    prefecture: "神奈川県",
+    city: "平塚市",
+    towns: [
+      { name: "八幡", zip: "2540015" },
+      { name: "中原上宿", zip: "2540071" },
+      { name: "入部", zip: "2591218" },
+    ],
+    office: "平塚市 地域包括ケア推進課（地域包括ケア担当）",
+    phone: "0463-20-8217",
+  },
+  {
+    prefecture: "神奈川県",
+    city: "相模原市中央区",
+    towns: [{ name: "矢部新田", zip: "2520208" }],
+    office: "相模原市 中央高齢・障害者相談課（高齢福祉班）",
+    phone: "042-769-8349",
+  },
+];
+const UNASSIGNED_CONFIRMED_ON = "2026-09-21";
+
+// 入力が上記の町（町名または郵便番号7桁）に当たる場合、案内情報を返す
+function findUnassignedArea(rawQuery) {
+  const query = normalizeKe(normalizeText(rawQuery));
+  if (!query) return [];
+
+  if (isZipLikeQuery(query)) {
+    const digits = digitsOnly(query);
+    if (digits.length !== 7) return [];
+    return UNASSIGNED_AREAS.flatMap((area) =>
+      area.towns.filter((t) => t.zip === digits).map((t) => ({ area, town: t }))
+    );
+  }
+
+  const hits = [];
+  for (const area of UNASSIGNED_AREAS) {
+    const prefecture = normalizeKe(area.prefecture);
+    const q = query.startsWith(prefecture) ? query.slice(prefecture.length) : query;
+    const alias = getCityAliases(normalizeKe(area.city))
+      .filter((a) => q.startsWith(a))
+      .sort((a, b) => b.length - a.length)[0];
+    const town = stripBanchi(stripChome(alias !== undefined ? q.slice(alias.length) : q));
+    for (const t of area.towns) {
+      if (town === normalizeKe(t.name)) hits.push({ area, town: t });
+    }
+  }
+  return hits;
+}
+
 // ---------- 検索ロジック ----------
 
 async function searchCenters(rawQuery) {
@@ -178,7 +242,7 @@ function formatConfirmedDate(dateStr) {
   return `${m[1]}年${Number(m[2])}月${Number(m[3])}日`;
 }
 
-function renderResults(results, query) {
+function renderResults(results, query, notices = []) {
   resultsEl.innerHTML = "";
 
   if (!query) {
@@ -189,6 +253,11 @@ function renderResults(results, query) {
   }
 
   document.body.classList.add("has-results");
+
+  if (results.length === 0 && notices.length > 0) {
+    notices.forEach((notice) => resultsEl.appendChild(createNoticeCard(notice)));
+    return;
+  }
 
   if (results.length === 0) {
     resultsEl.innerHTML =
@@ -204,6 +273,7 @@ function renderResults(results, query) {
   results.forEach((center) => {
     resultsEl.appendChild(createCenterCard(center));
   });
+  notices.forEach((notice) => resultsEl.appendChild(createNoticeCard(notice)));
 }
 
 function renderError() {
@@ -250,6 +320,27 @@ function createCenterCard(center) {
   return card;
 }
 
+// 担当センターが確認できない町の案内カード
+function createNoticeCard({ area, town }) {
+  const card = document.createElement("article");
+  card.className = "center-card center-card--notice";
+  card.innerHTML = `
+    <span class="center-card__zip">${formatZip(town.zip)}</span>
+    <h2 class="center-card__name">${escapeHtml(area.city)} ${escapeHtml(town.name)}</h2>
+    <p class="center-card__notice-text">この地域を担当する地域包括支援センターは、${escapeHtml(area.city.replace(/(市).+区$/, "$1"))}の公式資料では確認できませんでした。お手数ですが、下記の市役所の担当課にお問い合わせください。</p>
+    <p class="center-card__row">
+      <span class="center-card__icon" aria-hidden="true">🏛️</span>
+      <span>${escapeHtml(area.office)}</span>
+    </p>
+    <p class="center-card__row center-card__phone">
+      <span class="center-card__icon" aria-hidden="true">📞</span>
+      <a href="tel:${area.phone.replace(/-/g, "")}">${escapeHtml(area.phone)}</a>
+    </p>
+    <p class="center-card__confirmed">${escapeHtml(formatConfirmedDate(UNASSIGNED_CONFIRMED_ON))}時点の情報</p>
+  `;
+  return card;
+}
+
 // 簡易的なHTMLエスケープ（表示データがユーザー入力由来になった場合の保険）
 function escapeHtml(str) {
   const div = document.createElement("div");
@@ -283,5 +374,5 @@ searchForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  renderResults(data, normalizedQuery);
+  renderResults(data, normalizedQuery, findUnassignedArea(query));
 });

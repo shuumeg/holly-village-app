@@ -452,6 +452,18 @@ body.has-results .app-main {
   text-align: right;
 }
 
+/* 担当センターが確認できない町の案内カード */
+.center-card--notice {
+  border-left-color: var(--color-text-muted);
+}
+
+.center-card__notice-text {
+  margin: 0 0 10px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
 .center-card__zip {
   display: inline-block;
   margin-bottom: 2px;
