@@ -1,0 +1,44 @@
+# Supabase（無料プラン）の自動一時停止を防ぐための定期アクセス。
+# 無料プランは約1週間アクセスがないとプロジェクトが一時停止し、
+# 再開するまで検索アプリからデータを読めなくなるため、週2回アクセスしておく。
+#
+# 使っているキーは公開用のキー（script.js にも書いてあるもの）で、
+# 読み取りしかできないため、ここに直接書いてよい。
+#
+# 注意: GitHub はリポジトリに60日間更新がないと定期実行を停止する。
+#       停止前にメールで通知が来るので、そのとき「Enable workflow」で再開する。
+
+name: Supabase keepalive
+
+on:
+  schedule:
+    # 毎週 月曜・木曜 の 00:20 UTC（日本時間 09:20）
+    # 混雑する毎正時を避けるため 20 分ずらしている
+    - cron: "20 0 * * 1,4"
+  workflow_dispatch: # 手動実行も可能
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Supabase に1件だけ問い合わせる
+        env:
+          SUPABASE_URL: https://emxkorojlocgqzgezzri.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_6tqwbLFKrCjl6wos75xZgw_xZdu4C1k
+        run: |
+          set -euo pipefail
+          status=$(curl -sS -o response.json -w '%{http_code}' \
+            -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_PUBLISHABLE_KEY}" \
+            -H "Prefer: count=exact" \
+            -H "Range: 0-0" \
+            "${SUPABASE_URL}/rest/v1/centers?select=id")
+          echo "HTTP status: ${status}"
+          cat response.json
+          if [ "${status}" != "200" ] && [ "${status}" != "206" ]; then
+            echo "::error::Supabase への問い合わせに失敗しました（HTTP ${status}）。プロジェクトが一時停止している可能性があります。"
+            exit 1
+          fi
