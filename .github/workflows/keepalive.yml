@@ -15,7 +15,12 @@ on:
     # 毎週 月曜・木曜 の 00:20 UTC（日本時間 09:20）
     # 混雑する毎正時を避けるため 20 分ずらしている
     - cron: "20 0 * * 1,4"
-  workflow_dispatch: # 手動実行も可能
+  workflow_dispatch: # Actionsタブの「Run workflow」から手動実行もできる
+  push:
+    # このワークフロー自体を書き換えたときは、動作確認のためすぐ走らせる
+    branches: [main]
+    paths:
+      - .github/workflows/keepalive.yml
 
 permissions:
   contents: read
